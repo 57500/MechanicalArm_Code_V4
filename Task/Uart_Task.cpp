@@ -15,63 +15,99 @@ void Uart_Task(void *pvParameters)
     {
         if (xQueueReceive(Uart_Queue_H, Date, portMAX_DELAY) != pdTRUE) continue;
 
-        // if (Current_Task != NULL)
-        // {
-        //     Stop_Flag = true;
-        //
-        //     if (xSemaphoreTake(Stop_Semaphore_H, pdMS_TO_TICKS(200)) != pdTRUE)
-        //     {
-        //         nb.Clear();
-        //         nb.Emergency_Stop();
-        //         Current_Task = NULL;
-        //         HAL_TIM_Base_Start_IT(&htim1);
-        //         HAL_UART_Transmit(&huart1,(uint8_t*)"StopSemaphore Miss",sizeof("StopSemaphore Miss"),100);
-        //     }
-        // }
-        // Stop_Flag = false;
-        //
-        // if (strncmp((char*)Date, "PTP:", 4) == 0)
-        // {
-        //     char *token;
-        //     int count = 0;
-        //     float temp[6];
-        //
-        //     // 以此逗号 "," 为分隔符获取第一个数据
-        //     token = strtok((char*)Date+4, ",");
-        //
-        //     while(token != NULL && count < 6)
-        //     {
-        //         //将字符串转为浮点数
-        //         temp[count] = atof(token);
-        //         count++;
-        //
-        //         //以此逗号 "," 为分隔符获取下一个数据
-        //         token = strtok(NULL, ",");
-        //     }
-        //
-        //     if (count == 6)
-        //     {
-        //         Coordinates_Pose target;
-        //         target.x=temp[0];
-        //         target.y=temp[1];
-        //         target.z=temp[2];
-        //         target.alpha=temp[3];
-        //         target.beta=temp[4];
-        //         target.gamma=temp[5];
-        //
-        //         nb.UpDate_Current_Angle_Rad();
-        //         nb.UpDate_Current_CP();
-        //         nb.UpDate_Target_CP(target);
-        //         nb.UpDate_S_Curve_Profile();
-        //
-        //         Current_Task=PTP_Handle;
-        //         HAL_TIM_Base_Start_IT(&htim1);
-        //         xTaskNotifyGive(Current_Task);
-        //     }
-        // }
-         if (strncmp((char*)Date, "PAD:", 4) == 0)
+        if (Current_Task != NULL)
         {
-            HAL_UART_Transmit(&huart1, (uint8_t*)"PAD:Ack\n", strlen("PAD:Ack\n"), 100);
+            Stop_Flag = true;
+
+            if (xSemaphoreTake(Stop_Semaphore_H, pdMS_TO_TICKS(200)) != pdTRUE)
+            {
+                nb.Clear();
+                nb.Emergency_Stop();
+                Current_Task = NULL;
+                HAL_TIM_Base_Start_IT(&htim1);
+                HAL_UART_Transmit(&huart1,(uint8_t*)"StopSemaphore Miss",sizeof("StopSemaphore Miss"),100);
+            }
+        }
+        Stop_Flag = false;
+
+        if (strncmp((char*)Date, "PTP:", 4) == 0)
+        {
+            char *token;
+            int count = 0;
+            float temp[6];
+
+            // 以此逗号 "," 为分隔符获取第一个数据
+            token = strtok((char*)Date+4, ",");
+
+            while(token != NULL && count < 6)
+            {
+                //将字符串转为浮点数
+                temp[count] = atof(token);
+                count++;
+
+                //以此逗号 "," 为分隔符获取下一个数据
+                token = strtok(NULL, ",");
+            }
+
+            if (count == 6)
+            {
+                Coordinates_Pose target;
+                target.x=temp[0];
+                target.y=temp[1];
+                target.z=temp[2];
+                target.alpha=temp[3];
+                target.beta=temp[4];
+                target.gamma=temp[5];
+
+                nb.UpDate_Current_Angle_Rad();
+                nb.UpDate_Current_CP();
+                nb.UpDate_Target_CP(target);
+                nb.UpDate_S_Curve_Profile();
+
+                Current_Task=PTP_Handle;
+                HAL_TIM_Base_Start_IT(&htim1);
+                xTaskNotifyGive(Current_Task);
+            }
+        }
+        else if (strncmp((char*)Date, "PAD:", 4) == 0)
+        {
+            char *token;
+            int count = 0;
+            int pad_data[14] = {0}; // 用于存放 14 个手柄整型数据
+
+            token = strtok((char*)Date + 4, ",");
+
+            // 循环分割字符串，最多提取 14 个参数
+            while(token != NULL && count < 14)
+            {
+                // 使用 atoi 将字符串转为整数
+                pad_data[count] = atoi(token);
+                count++;
+
+                // 获取下一个数据
+                token = strtok(NULL, ",");
+            }
+
+            if (count==14)
+            {
+                Pad_Params_t Pad_Params;
+                Pad_Params.lx=pad_data[0];
+                Pad_Params.ly=pad_data[1];
+                Pad_Params.rx=pad_data[2];
+                Pad_Params.ry=pad_data[3];
+                Pad_Params.lt=pad_data[4];
+                Pad_Params.rt=pad_data[5];
+                Pad_Params.btn_a=pad_data[6];
+                Pad_Params.btn_b=pad_data[7];
+                Pad_Params.btn_x=pad_data[8];
+                Pad_Params.btn_y=pad_data[9];
+                Pad_Params.btn_lb=pad_data[10];
+                Pad_Params.btn_rb=pad_data[11];
+                Pad_Params.dpad_x=pad_data[12];
+                Pad_Params.dpad_y=pad_data[13];
+
+
+            }
         }
 
     }

@@ -25,6 +25,26 @@ typedef struct
     float gamma;
 }Coordinates_Pose;
 
+typedef struct
+{
+    uint8_t lx;
+    uint8_t ly;
+    uint8_t rx;
+    uint8_t ry;
+
+    uint8_t lt;
+    uint8_t rt;
+
+    uint8_t btn_a;
+    uint8_t btn_b;
+    uint8_t btn_x;
+    uint8_t btn_y;
+    uint8_t btn_lb;
+    uint8_t btn_rb;
+    uint8_t dpad_x;
+    uint8_t dpad_y;
+}Pad_Params_t;
+
 static constexpr DH_Params_t DH_Params[6]=
 {{0,0,161,0},
  {-PI/2,0,0,-PI/2},
