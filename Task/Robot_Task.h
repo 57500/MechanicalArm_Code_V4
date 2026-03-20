@@ -12,6 +12,7 @@
 extern NewBee nb;
 
 [[noreturn]] void PTP_Task(void *pvParameters);
+[[noreturn]] void PAD_Task(void *pvParameters);
 void Uart_Task(void *pvParameters);
 void RobotTask_Init(void);
 

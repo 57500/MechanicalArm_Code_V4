@@ -10,6 +10,10 @@ TaskHandle_t PTP_Handle;
 static StaticTask_t PTP_Tcb;
 static StackType_t PTP_Stack[1024];
 
+TaskHandle_t PAD_Handle;
+static StaticTask_t PAD_Tcb;
+static StackType_t PAD_Stack[512];
+
 TaskHandle_t Uart_Handle;
 static StaticTask_t Uart_Tcb;
 static StackType_t Uart_Stack[512];
@@ -42,7 +46,8 @@ void RobotTask_Init(void)
     PTP_Handle=xTaskCreateStatic(PTP_Task,"PTP",1024,
         NULL,3,PTP_Stack,&PTP_Tcb);
 
-
+    PTP_Handle=xTaskCreateStatic(PAD_Task,"PAD",512,
+        NULL,3,PAD_Stack,&PAD_Tcb);
 }
 
 

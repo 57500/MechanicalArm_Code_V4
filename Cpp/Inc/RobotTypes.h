@@ -27,10 +27,10 @@ typedef struct
 
 typedef struct
 {
-    uint8_t lx;
-    uint8_t ly;
-    uint8_t rx;
-    uint8_t ry;
+    int8_t lx;
+    int8_t ly;
+    int8_t rx;
+    int8_t ry;
 
     uint8_t lt;
     uint8_t rt;
@@ -41,8 +41,9 @@ typedef struct
     uint8_t btn_y;
     uint8_t btn_lb;
     uint8_t btn_rb;
-    uint8_t dpad_x;
-    uint8_t dpad_y;
+
+    int8_t dpad_x;
+    int8_t dpad_y;
 }Pad_Params_t;
 
 static constexpr DH_Params_t DH_Params[6]=

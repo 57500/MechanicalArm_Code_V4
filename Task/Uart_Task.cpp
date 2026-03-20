@@ -73,7 +73,7 @@ void Uart_Task(void *pvParameters)
         {
             char *token;
             int count = 0;
-            int pad_data[14] = {0}; // 用于存放 14 个手柄整型数据
+            int8_t pad_data[14] = {0}; // 用于存放 14 个手柄整型数据
 
             token = strtok((char*)Date + 4, ",");
 
