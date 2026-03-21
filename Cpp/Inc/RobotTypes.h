@@ -5,6 +5,8 @@
 #ifndef MECHANICALARM_CODE_V2_ROBOTTYPES_H
 #define MECHANICALARM_CODE_V2_ROBOTTYPES_H
 
+#include <cstdint>
+
 static constexpr float PI = 3.14159265358979323846f;
 
 typedef struct
