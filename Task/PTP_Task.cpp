@@ -42,7 +42,6 @@
                 if (nb.Get_Current_Step()>0)
                 {
                     nb.UpDate();
-                    uint8_t a=1;
                 }
             }
         }
