@@ -26,14 +26,25 @@ void NewBee::Clear()
 void NewBee::UpDate()
 {
     UpDate_Current_Angle_Rad();
-    ik.Solve_FinalTheta(tp.CP_Ref[tp.Count],state.Current_Angle_Rad,state.Next_Best_Angle_Rad,
-        state.Current_Angle_Rad[3]);
+    ik.Solve_FinalTheta(tp.CP_Ref[tp.Count],state.Current_Angle_Rad,state.Next_Best_Angle_Rad);
     tp.Control_Once(state.Current_Angle_Rad,state.Next_Best_Angle_Rad);
     Control_All_Motor(tp.JointRPM);
 
     UpDate_Current_CP();
     float x[2]={tp.CP_Ref[tp.Count].x,state.Current_CP.x};
     Send_FireWater_Text(x,2);
+}
+
+void NewBee::UpDate_Pad_Control()
+{
+    UpDate_Current_Angle_Rad();
+    UpDate_Current_CP();
+
+    pd.Calculate_Deta_CP(state.Current_Pad,state.Current_CP);
+
+    ik.Solve_FinalTheta(pd.Deta_CP,state.Current_Angle_Rad,state.Next_Best_Angle_Rad);
+
+    pd.Control_Once(state.Current_Angle_Rad,state.Next_Best_Angle_Rad);
 }
 
 void NewBee::Control_All_Motor(const float* rpm)

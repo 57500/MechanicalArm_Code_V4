@@ -588,7 +588,7 @@ bool Inverse_Kinematics::SelectBestSolution(const float current_angles[6],float 
  * @return bool 求解成功返回 true，失败返回 false
  */
 bool Inverse_Kinematics::Solve_FinalTheta(const Coordinates_Pose& target_pose,
-    const float current_angles[6],float best_angles[6],const float CurrentTheta4)
+    const float current_angles[6],float best_angles[6])
 {
     if (!current_angles || !best_angles)
     {
@@ -602,7 +602,7 @@ bool Inverse_Kinematics::Solve_FinalTheta(const Coordinates_Pose& target_pose,
     Solve_Theta3();
     Solve_Theta2();
     Solve_Theta1();
-    Solve_Theta456(target_pose,CurrentTheta4);
+    Solve_Theta456(target_pose,current_angles[3]);
 
     if (SelectBestSolution(current_angles,best_angles))return true;
     return false;

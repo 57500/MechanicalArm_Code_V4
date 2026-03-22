@@ -9,6 +9,7 @@
 #include "Forward_Kinematics.h"
 #include "Inverse_Kinematics.h"
 #include "MotorControl.h"
+#include "PadControl.h"
 #include "RobotState.h"
 #include "Trajectory_Planning.h"
 
@@ -20,6 +21,8 @@ public:
     void Clear(void);
 
     void UpDate(void);
+
+    void UpDate_Pad_Control();
 
     void Control_All_Motor(const float* rpm);
     void Emergency_Stop(void);
@@ -48,6 +51,8 @@ private:
     MotorControl motor6;
 
     RobotState state;
+
+    PadControl pd;
 };
 
 #endif //MECHANICALARM_CODE_V2_NEWBEE_H

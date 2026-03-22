@@ -64,7 +64,9 @@ add_executable(${CMAKE_PROJECT_NAME}
         Task/Uart_Task.cpp
         Task/PTP_Task.cpp
         Task/C_Hal_Bridge.h
-        Task/PAD_Task.cpp)
+        Task/PAD_Task.cpp
+        Cpp/Src/PadControl.cpp
+        Cpp/Inc/PadControl.h)
 
 # Add STM32CubeMX generated sources
 add_subdirectory(cmake/stm32cubemx)

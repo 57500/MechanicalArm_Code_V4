@@ -15,7 +15,7 @@ public:
 
     void Clear(void);
 
-    bool Solve_FinalTheta(const Coordinates_Pose& target_pose,const float current_angles[6],float best_angles[6],const float CurrentTheta4);
+    bool Solve_FinalTheta(const Coordinates_Pose& target_pose,const float current_angles[6],float best_angles[6]);
 
 private:
     typedef struct
