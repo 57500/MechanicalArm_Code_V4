@@ -25,6 +25,7 @@
 
         if (Stop_Flag==true)
         {
+            Stop_Flag = false;
             nb.Clear();
             nb.Emergency_Stop();
             HAL_TIM_Base_Stop_IT(&htim1);

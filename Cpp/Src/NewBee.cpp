@@ -32,10 +32,8 @@ void NewBee::UpDate()
     Control_All_Motor(tp.JointRPM);
 
     UpDate_Current_CP();
-    float x[12]={tp.CP_Ref[tp.Count].x,state.Current_CP.x,tp.CP_Ref[tp.Count].y,state.Current_CP.y,
-        tp.CP_Ref[tp.Count].z,state.Current_CP.z,tp.CP_Ref[tp.Count].alpha,state.Current_CP.alpha,
-        tp.CP_Ref[tp.Count].beta,state.Current_CP.beta,tp.CP_Ref[tp.Count].gamma,state.Current_CP.gamma,};
-    Send_FireWater_Text(x,12);
+    float x[2]={tp.CP_Ref[tp.Count].x,state.Current_CP.x};
+    Send_FireWater_Text(x,2);
 }
 
 void NewBee::Control_All_Motor(const float* rpm)
@@ -45,7 +43,7 @@ void NewBee::Control_All_Motor(const float* rpm)
     motor3.Motor_VelControl(rpm[2],0,0);
     motor4.Motor_VelControl(rpm[3],0,0);
     motor5.Motor_VelControl(rpm[4],0,0);
-    motor6.Motor_VelControl(rpm[5],0,0);
+    // motor6.Motor_VelControl(rpm[5],0,0);
 }
 
 void NewBee::Emergency_Stop(void)
@@ -57,7 +55,7 @@ void NewBee::Emergency_Stop(void)
     motor3.Motor_VelControl(0,0,0);
     motor4.Motor_VelControl(0,0,0);
     motor5.Motor_VelControl(0,0,0);
-    motor6.Motor_VelControl(0,0,0);
+    // motor6.Motor_VelControl(0,0,0);
 }
 
 void NewBee::UpDate_Current_Angle_Rad(void)

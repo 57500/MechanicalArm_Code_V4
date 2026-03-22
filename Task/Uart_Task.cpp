@@ -6,6 +6,14 @@
 #include "C_Hal_Bridge.h"
 #include "Robot_Task.h"
 
+enum TaskName
+{
+    NONE,
+    PTP,
+    PAD
+};
+
+static TaskName LastTask=NONE;
 
 void Uart_Task(void *pvParameters)
 {
@@ -15,7 +23,13 @@ void Uart_Task(void *pvParameters)
     {
         if (xQueueReceive(Uart_Queue_H, Date, portMAX_DELAY) != pdTRUE) continue;
 
-        if (Current_Task != NULL)
+        TaskName CurrentTask = NONE;
+
+        if (strncmp((char*)Date, "PTP:", 4) == 0) CurrentTask = PTP;
+        else if (strncmp((char*)Date, "PAD:", 4) == 0) CurrentTask = PAD;
+        else continue;
+
+        if ((CurrentTask != LastTask && LastTask != NONE)||(CurrentTask==PTP&&LastTask!=NONE))
         {
             Stop_Flag = true;
 
@@ -25,13 +39,13 @@ void Uart_Task(void *pvParameters)
                 nb.Emergency_Stop();
                 Current_Task = NULL;
                 HAL_TIM_Base_Start_IT(&htim1);
-                HAL_UART_Transmit(&huart1,(uint8_t*)"StopSemaphore Miss",sizeof("StopSemaphore Miss"),100);
+                HAL_UART_Transmit(&huart1, (uint8_t*)"StopSemaphore Miss", sizeof("StopSemaphore Miss"), 100);
             }
         }
-        Stop_Flag = false;
 
-        if (strncmp((char*)Date, "PTP:", 4) == 0)
+        if (CurrentTask==PTP)
         {
+            LastTask=PTP;
             char *token;
             int count = 0;
             float temp[6];
@@ -69,8 +83,9 @@ void Uart_Task(void *pvParameters)
                 xTaskNotifyGive(Current_Task);
             }
         }
-        else if (strncmp((char*)Date, "PAD:", 4) == 0)
+        else if (CurrentTask==PAD)
         {
+            LastTask=PAD;
             char *token;
             int count = 0;
             int8_t pad_data[14] = {0}; // 用于存放 14 个手柄整型数据

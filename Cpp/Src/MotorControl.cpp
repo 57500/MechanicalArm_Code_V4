@@ -60,7 +60,8 @@ void MotorControl::Motor_VelControl(float Speed, uint8_t Acc, uint8_t Syn)
 
     //限制最大转速
     const uint16_t MAX_RPM = 1000;
-    if (rpmFloat > MAX_RPM) {
+    if (rpmFloat > MAX_RPM)
+    {
         rpmFloat = MAX_RPM;
     }
 
