@@ -17,6 +17,7 @@ RobotState::RobotState()
     memset(Next_Best_Angle_Rad,0,sizeof(Next_Best_Angle_Rad));
     Current_CP={0};
     Target_CP={0};
+    Current_Pad={0};
 }
 
 void RobotState::Clear()
@@ -25,6 +26,7 @@ void RobotState::Clear()
     memset(Next_Best_Angle_Rad,0,sizeof(Next_Best_Angle_Rad));
     Current_CP={0};
     Target_CP={0};
+    Current_Pad={0};
 }
 
 

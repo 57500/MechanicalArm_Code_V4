@@ -88,14 +88,14 @@ void Uart_Task(void *pvParameters)
             LastTask=PAD;
             char *token;
             int count = 0;
-            int8_t pad_data[14] = {0}; // 用于存放 14 个手柄整型数据
+            int16_t pad_data[14] = {0}; // 用于存放 14 个手柄整型数据
 
             token = strtok((char*)Date + 4, ",");
 
             // 循环分割字符串，最多提取 14 个参数
             while(token != NULL && count < 14)
             {
-                // 使用 atoi 将字符串转为整数
+                // 使用 atof 将字符串转为整数
                 pad_data[count] = atoi(token);
                 count++;
 
@@ -121,7 +121,11 @@ void Uart_Task(void *pvParameters)
                 Pad_Params.dpad_x=pad_data[12];
                 Pad_Params.dpad_y=pad_data[13];
 
+                nb.UpDate_Current_Pad(Pad_Params);
 
+                Current_Task=PAD_Handle;
+                HAL_TIM_Base_Start_IT(&htim1);
+                xTaskNotifyGive(Current_Task);
             }
         }
 

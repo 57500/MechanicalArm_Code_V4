@@ -47,8 +47,8 @@ void RobotTask_Init(void)
     PTP_Handle=xTaskCreateStatic(PTP_Task,"PTP",1024,
         NULL,3,PTP_Stack,&PTP_Tcb);
 
-    // PTP_Handle=xTaskCreateStatic(PAD_Task,"PAD",512,
-    //     NULL,3,PAD_Stack,&PAD_Tcb);
+    PTP_Handle=xTaskCreateStatic(PAD_Task,"PAD",512,
+        NULL,3,PAD_Stack,&PAD_Tcb);
 }
 
 

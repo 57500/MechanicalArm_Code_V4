@@ -22,6 +22,8 @@ public:
 
     Coordinates_Pose Target_CP;
 
+    Pad_Params_t Current_Pad;
+
 };
 
 #endif //MECHANICALARM_CODE_V2_ROBOTSTATE_H

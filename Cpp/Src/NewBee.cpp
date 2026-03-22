@@ -169,3 +169,10 @@ void NewBee::UpDate_Current_CP()
     state.Current_CP=fk.Forward_Kinematics(state.Current_Angle_Rad);
 }
 
+void NewBee::UpDate_Current_Pad(const Pad_Params_t pd)
+{
+    state.Current_Pad=pd;
+}
+
+
+

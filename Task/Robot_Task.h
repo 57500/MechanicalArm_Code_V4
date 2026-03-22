@@ -17,6 +17,7 @@ void Uart_Task(void *pvParameters);
 void RobotTask_Init(void);
 
 extern TaskHandle_t PTP_Handle;
+extern TaskHandle_t PAD_Handle;
 extern TaskHandle_t Uart_Handle;
 extern TaskHandle_t Current_Task;
 

@@ -35,7 +35,7 @@ extern "C" {
 extern UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN Private defines */
-#define RX_BUFFER_SIZE1 32 // 定义缓冲区大小，足够存下一行数据即可
+#define RX_BUFFER_SIZE1 64 // 定义缓冲区大小，足够存下一行数据即可
 
 
   typedef struct

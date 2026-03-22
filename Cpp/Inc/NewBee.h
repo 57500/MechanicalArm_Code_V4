@@ -31,6 +31,8 @@ public:
     void UpDate_Target_CP(const Coordinates_Pose& target_cp);
     void UpDate_Current_CP(void);
     void UpDate_Current_Angle_Rad(void);
+    void UpDate_Current_Pad(const Pad_Params_t pd);
+
 
 private:
     ForwardKinematics fk;
