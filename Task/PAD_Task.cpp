@@ -33,7 +33,7 @@
         {
             if (Stop_Flag==false)
             {
-
+                nb.UpDate_Pad_Control();
             }
         }
     }

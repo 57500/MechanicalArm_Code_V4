@@ -15,10 +15,11 @@ public:
 
     void Control_Once(const float* current_angle_rad,const float* Best_Angle_Rad);
 
+    void Clear();
+
     Coordinates_Pose Deta_CP;
 
     float JointRPM[6];
-
 
 private:
 
@@ -29,8 +30,6 @@ private:
 
     Pad_Params_t Last_PD;
     Pad_Params_t Target_PD;
-    uint8_t is_first_run=1;
-    int8_t Sign;
 };
 
 #endif //MECHANICALARM_CODE_V4_PADCONTROL_H

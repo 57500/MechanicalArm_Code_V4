@@ -21,6 +21,7 @@ void NewBee::Clear()
     ik.Clear();
     state.Clear();
     tp.Clear();
+    pd.Clear();
 }
 
 void NewBee::UpDate()

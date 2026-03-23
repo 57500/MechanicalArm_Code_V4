@@ -5,10 +5,22 @@
 #include "PadControl.h"
 
 #include <cmath>
+#include <cstring>
 
 PadControl::PadControl()
 {
+    memset(JointRPM,0,sizeof(float)*6);
+    Deta_CP={};
+    Target_PD = {};
+    Last_PD={};
+}
 
+void PadControl::Clear()
+{
+    memset(JointRPM,0,sizeof(float)*6);
+    Deta_CP={};
+    Target_PD = {};
+    Last_PD={};
 }
 
 void PadControl::Calculate_Deta_CP(const Pad_Params_t Current_PD, const Coordinates_Pose Current_CP)
@@ -33,7 +45,6 @@ void PadControl::Calculate_Deta_CP(const Pad_Params_t Current_PD, const Coordina
     Deta_CP = Current_CP;
     Deta_CP.x = (float)Target_PD.lx * Sensitivity * CONTROL_DT + Current_CP.x;
 }
-
 
 void PadControl::Control_Once(const float* current_angle_rad, const float* Best_Angle_Rad)
 {
