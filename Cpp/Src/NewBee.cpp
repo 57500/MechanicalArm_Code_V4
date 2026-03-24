@@ -46,6 +46,8 @@ void NewBee::UpDate_Pad_Control()
     ik.Solve_FinalTheta(pd.Deta_CP,state.Current_Angle_Rad,state.Next_Best_Angle_Rad);
 
     pd.Control_Once(state.Current_Angle_Rad,state.Next_Best_Angle_Rad);
+
+    Control_All_Motor(pd.JointRPM);
 }
 
 void NewBee::Control_All_Motor(const float* rpm)
