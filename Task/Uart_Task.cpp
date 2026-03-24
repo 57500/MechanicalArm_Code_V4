@@ -13,7 +13,7 @@ enum TaskName
     PAD
 };
 
-static TaskName LastTask=NONE;
+static TaskName LastTask=PTP;
 
 void Uart_Task(void *pvParameters)
 {
@@ -38,14 +38,13 @@ void Uart_Task(void *pvParameters)
                 nb.Clear();
                 nb.Emergency_Stop();
                 Current_Task = NULL;
-                HAL_TIM_Base_Start_IT(&htim1);
+                HAL_TIM_Base_Stop_IT(&htim1);
                 HAL_UART_Transmit(&huart1, (uint8_t*)"StopSemaphore Miss", sizeof("StopSemaphore Miss"), 100);
             }
         }
 
         if (CurrentTask==PTP)
         {
-            LastTask=PTP;
             char *token;
             int count = 0;
             float temp[6];
@@ -77,15 +76,10 @@ void Uart_Task(void *pvParameters)
                 nb.UpDate_Current_CP();
                 nb.UpDate_Target_CP(target);
                 nb.UpDate_S_Curve_Profile();
-
-                Current_Task=PTP_Handle;
-                HAL_TIM_Base_Start_IT(&htim1);
-                xTaskNotifyGive(Current_Task);
             }
         }
         else if (CurrentTask==PAD)
         {
-            LastTask=PAD;
             char *token;
             int count = 0;
             int16_t pad_data[14] = {0}; // 用于存放 14 个手柄整型数据
@@ -122,12 +116,27 @@ void Uart_Task(void *pvParameters)
                 Pad_Params.dpad_y=pad_data[13];
 
                 nb.UpDate_Current_Pad(Pad_Params);
-
-                Current_Task=PAD_Handle;
-                HAL_TIM_Base_Start_IT(&htim1);
-                xTaskNotifyGive(Current_Task);
             }
         }
+
+        if ((CurrentTask != LastTask && LastTask != NONE)||(CurrentTask==PTP&&LastTask!=NONE))
+        {
+            if (CurrentTask == PTP)
+            {
+                Current_Task=PTP_Handle;
+                HAL_TIM_Base_Start_IT(&htim1);
+            }
+            else if (CurrentTask == PAD)
+            {
+                Current_Task=PAD_Handle;
+                HAL_TIM_Base_Start_IT(&htim1);
+            }
+
+            xTaskNotifyGive(Current_Task);
+        }
+
+
+        LastTask=CurrentTask;
 
     }
 }

@@ -2,6 +2,7 @@
 // Created by 57500 on 2026/3/10.
 //
 #include "Robot_Task.h"
+#include "tim.h"
 #include "usart.h"
 
 NewBee nb;
@@ -47,8 +48,12 @@ void RobotTask_Init(void)
     PTP_Handle=xTaskCreateStatic(PTP_Task,"PTP",1024,
         NULL,3,PTP_Stack,&PTP_Tcb);
 
-    PTP_Handle=xTaskCreateStatic(PAD_Task,"PAD",512,
+    PAD_Handle=xTaskCreateStatic(PAD_Task,"PAD",512,
         NULL,3,PAD_Stack,&PAD_Tcb);
+
+    Current_Task=PTP_Handle;
+    HAL_TIM_Base_Start_IT(&htim1);
+    xTaskNotifyGive(Current_Task);
 }
 
 
