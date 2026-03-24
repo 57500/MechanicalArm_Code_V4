@@ -43,7 +43,7 @@ void RobotTask_Init(void)
     Tim1_Queue_H = xQueueCreateStatic(5, sizeof(uint8_t), Tim1_Queue_Stack, &Tim1_Queue_Tcb);
 
     Uart_Handle=xTaskCreateStatic(Uart_Task,"Uart",512,
-        NULL,1,Uart_Stack,&Uart_Tcb);
+        NULL,4,Uart_Stack,&Uart_Tcb);
 
     PTP_Handle=xTaskCreateStatic(PTP_Task,"PTP",1024,
         NULL,3,PTP_Stack,&PTP_Tcb);

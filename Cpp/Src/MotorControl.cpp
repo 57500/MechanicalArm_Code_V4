@@ -194,5 +194,10 @@ void MotorControl::Read_Motor_Pos(uint8_t addr)
     Data[0]=addr;
     Data[1]=0x36;
     Data[2]=0x6B;
+
     MyCAN1_Transmit(Data,3);
+    // if (MyCAN1_Transmit(Data,3)==true)
+    // {
+    //     UART_SendFloat_sprintf(&huart1,Data[0],1);
+    // }
 }

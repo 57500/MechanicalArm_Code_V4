@@ -22,6 +22,7 @@
 
 /* USER CODE BEGIN 0 */
 #include "stdbool.h"
+#include "usart.h"
 const float M_PI = 3.14159265358979323846f;
 
 float dh_theta[6]={0,-M_PI/2,M_PI/2,0,-M_PI/2,0};
@@ -260,7 +261,7 @@ bool MyCAN1_Transmit(const uint8_t* Data, const uint8_t Length)
 
     while (HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK)
     {
-      if (HAL_GetTick() - start_tick > 2000)
+      if (HAL_GetTick() - start_tick > 10)
       {
         return false;
       }
@@ -269,7 +270,9 @@ bool MyCAN1_Transmit(const uint8_t* Data, const uint8_t Length)
     packnum++;
   }
 
+
   return true;
+
 }
 
 CAN1_t can1={0};

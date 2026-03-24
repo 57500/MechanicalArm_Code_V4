@@ -3,6 +3,7 @@
 //
 #include <cstring>
 
+#include "cmsis_os2.h"
 #include "C_Hal_Bridge.h"
 #include "Robot_Task.h"
 
@@ -71,6 +72,9 @@ void Uart_Task(void *pvParameters)
                 target.alpha=temp[3];
                 target.beta=temp[4];
                 target.gamma=temp[5];
+
+                //防止总线忙碌！！！！！！
+                osDelay(10);
 
                 nb.UpDate_Current_Angle_Rad();
                 nb.UpDate_Current_CP();

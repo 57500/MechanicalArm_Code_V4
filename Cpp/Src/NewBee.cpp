@@ -31,9 +31,9 @@ void NewBee::UpDate()
     tp.Control_Once(state.Current_Angle_Rad,state.Next_Best_Angle_Rad);
     Control_All_Motor(tp.JointRPM);
 
-    UpDate_Current_CP();
-    float x[2]={tp.CP_Ref[tp.Count].x,state.Current_CP.x};
-    Send_FireWater_Text(x,2);
+    // UpDate_Current_CP();
+    // float x[2]={tp.CP_Ref[tp.Count].x,state.Current_CP.x};
+    // Send_FireWater_Text(x,2);
 }
 
 void NewBee::UpDate_Pad_Control()
@@ -60,7 +60,7 @@ void NewBee::Control_All_Motor(const float* rpm)
 
 void NewBee::Emergency_Stop(void)
 {
-    tp.Clear();
+    Clear();
 
     motor1.Motor_VelControl(0,0,0);
     motor2.Motor_VelControl(0,0,0);
@@ -78,7 +78,10 @@ void NewBee::UpDate_Current_Angle_Rad(void)
         uint32_t wait_start = HAL_GetTick();
         while (HAL_CAN_GetTxMailboxesFreeLevel(&hcan1) == 0)
         {
-            if (HAL_GetTick() - wait_start > 2)break;
+            if (HAL_GetTick() - wait_start > 2)
+            {
+                break;
+            }
         }
         MotorControl::Read_Motor_Pos(i+1);
     }
@@ -87,8 +90,10 @@ void NewBee::UpDate_Current_Angle_Rad(void)
     while (!(can1.rx_flag[0] && can1.rx_flag[1] && can1.rx_flag[2] &&
          can1.rx_flag[3] && can1.rx_flag[4]))
     {
-
-        if (HAL_GetTick() - start_tick > 6) break;
+        if (HAL_GetTick() - start_tick > 6)
+        {
+            break;
+        }
     }
 
     for (int i=0; i<6; i++)
