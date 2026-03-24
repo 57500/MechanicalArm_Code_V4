@@ -36,8 +36,6 @@ public:
     void UpDate_Current_Angle_Rad(void);
     void UpDate_Current_Pad(const Pad_Params_t pd);
 
-    RobotState state;
-
 private:
     ForwardKinematics fk;
     Inverse_Kinematics ik;
@@ -51,7 +49,7 @@ private:
     MotorControl motor5;
     MotorControl motor6;
 
-
+    RobotState state;
 
     PadControl pd;
 };
