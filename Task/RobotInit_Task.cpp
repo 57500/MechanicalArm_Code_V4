@@ -27,6 +27,10 @@ QueueHandle_t Tim1_Queue_H;
 static StaticQueue_t Tim1_Queue_Tcb;
 static uint8_t Tim1_Queue_Stack[5*sizeof(uint8_t)];
 
+QueueHandle_t Pad_Queue_H;
+static StaticQueue_t Pad_Queue_Tcb;
+static uint8_t Pad_Queue_Stack[5*sizeof(Pad_Params_t)];
+
 static StaticSemaphore_t Stop_Semaphore_Stack;
 SemaphoreHandle_t Stop_Semaphore_H;
 

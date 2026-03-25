@@ -119,8 +119,7 @@ void Uart_Task(void *pvParameters)
                 Pad_Params.dpad_x=pad_data[12];
                 Pad_Params.dpad_y=pad_data[13];
 
-                // nb.UpDate_Current_Pad(Pad_Params);
-                UART_SendFloat_sprintf(&huart1,Pad_Params.lx,1);
+                xQueueSend(Pad_Queue_H,&Pad_Params,pdMS_TO_TICKS(20));
 
             }
         }

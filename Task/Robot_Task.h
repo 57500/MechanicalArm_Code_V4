@@ -23,6 +23,7 @@ extern TaskHandle_t Current_Task;
 
 extern QueueHandle_t Uart_Queue_H;
 extern QueueHandle_t Tim1_Queue_H;
+extern QueueHandle_t Pad_Queue_H;
 
 extern SemaphoreHandle_t Stop_Semaphore_H;
 

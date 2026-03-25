@@ -5,6 +5,8 @@
 #include "Robot_Task.h"
 #include "tim.h"
 
+static Pad_Params_t pd;
+
 [[noreturn]] void PAD_Task(void *pvParameters)
 {
     Wait:
@@ -16,6 +18,8 @@
         uint8_t TimFlag=0;
 
         BaseType_t Receive=xQueueReceive(Tim1_Queue_H,&TimFlag,pdMS_TO_TICKS(20));
+
+        BaseType_t Date_Receive=xQueueReceive(Pad_Queue_H,&pd,pdMS_TO_TICKS(20));
 
         if (Stop_Flag==true)
         {
@@ -33,7 +37,12 @@
         {
             if (Stop_Flag==false)
             {
-                nb.UpDate_Pad_Control();
+                if (Date_Receive==pdTRUE)
+                {
+                    nb.UpDate_Current_Pad(pd);
+                    nb.UpDate_Pad_Control();
+                }
+
             }
         }
     }
