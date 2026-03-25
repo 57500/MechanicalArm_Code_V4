@@ -52,8 +52,8 @@ void RobotTask_Init(void)
     PTP_Handle=xTaskCreateStatic(PTP_Task,"PTP",1024,
         NULL,3,PTP_Stack,&PTP_Tcb);
 
-    PAD_Handle=xTaskCreateStatic(PAD_Task,"PAD",512,
-        NULL,3,PAD_Stack,&PAD_Tcb);
+    // PAD_Handle=xTaskCreateStatic(PAD_Task,"PAD",512,
+    //     NULL,3,PAD_Stack,&PAD_Tcb);
 
     Current_Task=PTP_Handle;
     HAL_TIM_Base_Start_IT(&htim1);
