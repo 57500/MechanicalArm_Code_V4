@@ -47,7 +47,9 @@ void NewBee::UpDate_Pad_Control()
 
     pd.Control_Once(state.Current_Angle_Rad,state.Next_Best_Angle_Rad);
 
-    // Control_All_Motor(pd.JointRPM);
+    UART_SendFloat_sprintf(&huart1,pd.JointRPM[1],5);
+
+    Control_All_Motor(pd.JointRPM);
 }
 
 void NewBee::Control_All_Motor(const float* rpm)

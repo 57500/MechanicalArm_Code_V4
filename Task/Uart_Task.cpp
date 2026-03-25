@@ -119,8 +119,7 @@ void Uart_Task(void *pvParameters)
                 Pad_Params.dpad_x=pad_data[12];
                 Pad_Params.dpad_y=pad_data[13];
 
-                // xQueueSend(Pad_Queue_H,&Pad_Params,pdMS_TO_TICKS(20));
-                UART_SendFloat_sprintf(&huart1,pad_data[0],1);
+                xQueueSend(Pad_Queue_H,&Pad_Params,pdMS_TO_TICKS(20));
 
             }
         }
@@ -132,11 +131,11 @@ void Uart_Task(void *pvParameters)
                 Current_Task=PTP_Handle;
                 HAL_TIM_Base_Start_IT(&htim1);
             }
-            // else if (CurrentTask == PAD)
-            // {
-            //     Current_Task=PAD_Handle;
-            //     HAL_TIM_Base_Start_IT(&htim1);
-            // }
+            else if (CurrentTask == PAD)
+            {
+                Current_Task=PAD_Handle;
+                HAL_TIM_Base_Start_IT(&htim1);
+            }
 
             xTaskNotifyGive(Current_Task);
         }

@@ -4,6 +4,7 @@
 
 #include "Robot_Task.h"
 #include "tim.h"
+#include "usart.h"
 
 static Pad_Params_t pd;
 
@@ -47,3 +48,4 @@ static Pad_Params_t pd;
         }
     }
 }
+
