@@ -7,6 +7,8 @@
 #include <cmath>
 #include <cstring>
 
+#include "usart.h"
+
 PadControl::PadControl()
 {
     memset(JointRPM,0,sizeof(float)*6);
@@ -25,13 +27,13 @@ void PadControl::Clear()
 
 void PadControl::Calculate_Deta_CP(const Pad_Params_t Current_PD, const Coordinates_Pose Current_CP)
 {
-    float diff = Current_PD.lx - Last_PD.lx;
+    float difflx = Current_PD.lx - Last_PD.lx;
 
-    if (diff > Limit)
+    if (difflx > Limit)
     {
         Target_PD.lx = Last_PD.lx + Limit;
     }
-    else if (diff < -Limit)
+    else if (difflx < -Limit)
     {
         Target_PD.lx = Last_PD.lx - Limit;
     }
@@ -40,10 +42,27 @@ void PadControl::Calculate_Deta_CP(const Pad_Params_t Current_PD, const Coordina
         Target_PD.lx = Current_PD.lx;
     }
 
+    float diffly = Current_PD.ly - Last_PD.ly;
+
+    if (diffly > Limit)
+    {
+        Target_PD.ly = Last_PD.ly + Limit;
+    }
+    else if (diffly < -Limit)
+    {
+        Target_PD.ly = Last_PD.ly - Limit;
+    }
+    else
+    {
+        Target_PD.ly = Current_PD.ly;
+    }
+
     Last_PD = Target_PD;
 
     Deta_CP = Current_CP;
-    Deta_CP.x = (float)Target_PD.lx * Sensitivity * CONTROL_DT + Current_CP.x;
+    Deta_CP.x = -(float)Target_PD.ly * Sensitivity * CONTROL_DT + Current_CP.x;
+    Deta_CP.y = -(float)Target_PD.lx * Sensitivity * CONTROL_DT + Current_CP.y;
+
 }
 
 void PadControl::Control_Once(const float* current_angle_rad, const float* Best_Angle_Rad)

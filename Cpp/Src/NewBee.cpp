@@ -29,7 +29,7 @@ void NewBee::UpDate()
     UpDate_Current_Angle_Rad();
     ik.Solve_FinalTheta(tp.CP_Ref[tp.Count],state.Current_Angle_Rad,state.Next_Best_Angle_Rad);
     tp.Control_Once(state.Current_Angle_Rad,state.Next_Best_Angle_Rad);
-    // Control_All_Motor(tp.JointRPM);
+    Control_All_Motor(tp.JointRPM);
 
     // UpDate_Current_CP();
     // float x[2]={tp.CP_Ref[tp.Count].x,state.Current_CP.x};
@@ -47,9 +47,9 @@ void NewBee::UpDate_Pad_Control()
 
     pd.Control_Once(state.Current_Angle_Rad,state.Next_Best_Angle_Rad);
 
-    UART_SendFloat_sprintf(&huart1,pd.JointRPM[1],5);
-
     Control_All_Motor(pd.JointRPM);
+
+    UART_SendFloat_sprintf(&huart1,state.Current_CP.x,2);
 }
 
 void NewBee::Control_All_Motor(const float* rpm)

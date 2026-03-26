@@ -24,8 +24,8 @@ public:
 private:
 
     static constexpr float CONTROL_DT=0.01f;
-    static constexpr float Sensitivity=1.0f;
-    static constexpr uint8_t Limit=1;
+    static constexpr float Sensitivity=0.8f;
+    static constexpr uint8_t Limit=20;
     static constexpr float RAD_TO_RPM=9.549297f;
 
     Pad_Params_t Last_PD;
