@@ -43,9 +43,13 @@ typedef struct
     uint8_t btn_y;
     uint8_t btn_lb;
     uint8_t btn_rb;
+    uint8_t btn_m1;
+    uint8_t btn_m2;
 
     int8_t dpad_x;
     int8_t dpad_y;
+
+
 }Pad_Params_t;
 
 static constexpr DH_Params_t DH_Params[6]=

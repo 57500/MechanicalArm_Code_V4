@@ -29,6 +29,7 @@ void NewBee::UpDate()
     UpDate_Current_Angle_Rad();
     ik.Solve_FinalTheta(tp.CP_Ref[tp.Count],state.Current_Angle_Rad,state.Next_Best_Angle_Rad);
     tp.Control_Once(state.Current_Angle_Rad,state.Next_Best_Angle_Rad);
+
     Control_All_Motor(tp.JointRPM);
 
     // UpDate_Current_CP();
@@ -49,7 +50,8 @@ void NewBee::UpDate_Pad_Control()
 
     Control_All_Motor(pd.JointRPM);
 
-    UART_SendFloat_sprintf(&huart1,state.Current_CP.x,2);
+    UART_SendFloat_sprintf(&huart1,state.Current_CP.z,2);
+
 }
 
 void NewBee::Control_All_Motor(const float* rpm)
@@ -59,7 +61,7 @@ void NewBee::Control_All_Motor(const float* rpm)
     motor3.Motor_VelControl(rpm[2],0,0);
     motor4.Motor_VelControl(rpm[3],0,0);
     motor5.Motor_VelControl(rpm[4],0,0);
-    // motor6.Motor_VelControl(rpm[5],0,0);
+    motor6.Motor_VelControl(rpm[5],0,0);
 }
 
 void NewBee::Emergency_Stop(void)
@@ -71,7 +73,7 @@ void NewBee::Emergency_Stop(void)
     motor3.Motor_VelControl(0,0,0);
     motor4.Motor_VelControl(0,0,0);
     motor5.Motor_VelControl(0,0,0);
-    // motor6.Motor_VelControl(0,0,0);
+    motor6.Motor_VelControl(0,0,0);
 }
 
 void NewBee::UpDate_Current_Angle_Rad(void)
@@ -92,7 +94,7 @@ void NewBee::UpDate_Current_Angle_Rad(void)
 
     uint32_t start_tick = HAL_GetTick();
     while (!(can1.rx_flag[0] && can1.rx_flag[1] && can1.rx_flag[2] &&
-         can1.rx_flag[3] && can1.rx_flag[4]))
+         can1.rx_flag[3] && can1.rx_flag[4]&&can1.rx_flag[5]))
     {
         if (HAL_GetTick() - start_tick > 6)
         {

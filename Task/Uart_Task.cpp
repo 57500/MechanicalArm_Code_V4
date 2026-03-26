@@ -3,6 +3,7 @@
 //
 #include <cstring>
 
+
 #include "cmsis_os2.h"
 #include "C_Hal_Bridge.h"
 #include "Robot_Task.h"
@@ -86,12 +87,12 @@ void Uart_Task(void *pvParameters)
         {
             char *token;
             int count = 0;
-            int16_t pad_data[14] = {0}; // 用于存放 14 个手柄整型数据
+            int16_t pad_data[16] = {0}; // 用于存放 14 个手柄整型数据
 
             token = strtok((char*)Date + 4, ",");
 
             // 循环分割字符串，最多提取 14 个参数
-            while(token != NULL && count < 14)
+            while(token != NULL && count < 16)
             {
                 // 使用 atof 将字符串转为整数
                 pad_data[count] = atoi(token);
@@ -101,7 +102,7 @@ void Uart_Task(void *pvParameters)
                 token = strtok(NULL, ",");
             }
 
-            if (count==14)
+            if (count==16)
             {
                 Pad_Params_t Pad_Params;
                 Pad_Params.lx=pad_data[0];
@@ -118,6 +119,8 @@ void Uart_Task(void *pvParameters)
                 Pad_Params.btn_rb=pad_data[11];
                 Pad_Params.dpad_x=pad_data[12];
                 Pad_Params.dpad_y=pad_data[13];
+                Pad_Params.btn_m1=pad_data[14];
+                Pad_Params.btn_m2=pad_data[15];
 
                 xQueueSend(Pad_Queue_H,&Pad_Params,pdMS_TO_TICKS(20));
 

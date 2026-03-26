@@ -27,41 +27,29 @@ void PadControl::Clear()
 
 void PadControl::Calculate_Deta_CP(const Pad_Params_t Current_PD, const Coordinates_Pose Current_CP)
 {
-    float difflx = Current_PD.lx - Last_PD.lx;
 
-    if (difflx > Limit)
+    auto applyRateLimit = [](int8_t current, int8_t last, uint8_t limit) -> int8_t
     {
-        Target_PD.lx = Last_PD.lx + Limit;
-    }
-    else if (difflx < -Limit)
-    {
-        Target_PD.lx = Last_PD.lx - Limit;
-    }
-    else
-    {
-        Target_PD.lx = Current_PD.lx;
-    }
+        int16_t diff = current - last; // 用 int16_t 防止 int8_t 溢出
+        if (diff > limit)  return last + limit;
+        if (diff < -limit) return last - limit;
+        return current;
+    };
 
-    float diffly = Current_PD.ly - Last_PD.ly;
+    Target_PD.lx=applyRateLimit(Current_PD.lx,Target_PD.lx,Limit);
+    Target_PD.ly=applyRateLimit(Current_PD.ly,Target_PD.ly,Limit);
+    Target_PD.rt=Current_PD.rt*Z_limit;
+    Target_PD.lt=Current_PD.lt*Z_limit;
 
-    if (diffly > Limit)
-    {
-        Target_PD.ly = Last_PD.ly + Limit;
-    }
-    else if (diffly < -Limit)
-    {
-        Target_PD.ly = Last_PD.ly - Limit;
-    }
-    else
-    {
-        Target_PD.ly = Current_PD.ly;
-    }
+
 
     Last_PD = Target_PD;
 
     Deta_CP = Current_CP;
     Deta_CP.x = -(float)Target_PD.ly * Sensitivity * CONTROL_DT + Current_CP.x;
     Deta_CP.y = -(float)Target_PD.lx * Sensitivity * CONTROL_DT + Current_CP.y;
+    Deta_CP.z = (float)Target_PD.rt * Sensitivity * CONTROL_DT -(float)Target_PD.lt * Sensitivity * CONTROL_DT+Current_CP.z;
+
 
 }
 
