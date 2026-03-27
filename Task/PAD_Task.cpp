@@ -2,6 +2,9 @@
 // Created by 57500 on 2026/3/20.
 //
 
+#include <cstdio>
+#include <cstring>
+
 #include "Robot_Task.h"
 #include "tim.h"
 #include "usart.h"
