@@ -310,7 +310,7 @@ void CAN_Process_Motor_Data(CAN_RxHeaderTypeDef *pHeader, uint8_t *pData, uint8_
         static const float ratios[] = {50.0f, 51.0f, 51.0f, 51.0f, 27.0f, 51.0f};
         float Joint_Angle = Motor_Angle / ratios[idx];
 
-        if (motor_id==3||motor_id==4||motor_id==6)
+        if (motor_id==3||motor_id==4)
         {
           can1.current_angle[idx] = -(Joint_Angle * M_PI / 180.0f) + dh_theta[idx];
         }

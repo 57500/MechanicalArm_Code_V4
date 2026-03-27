@@ -373,36 +373,34 @@ Inverse_Kinematics::Rotation_Matrix Inverse_Kinematics::ZYZ_to_RotationMatrix(co
  * @return NULL
  * @note 为每个有效的前三关节解计算对应的腕部关节角
  */
-void Inverse_Kinematics::Solve_Theta456(const Coordinates_Pose& Coor_Pos,const float CurrentTheta4)
+
+/**
+ * @brief 求解腕部关节角 θ₄, θ₅, θ₆ (已加入工业级奇异点平滑阻尼)
+ * @param Coor_Pos 目标末端位姿
+ * @param CurrentTheta4 当前真实的第4轴角度 (用于奇异点平滑过渡)
+ */
+
+
+void Inverse_Kinematics::Solve_Theta456(const Coordinates_Pose& Coor_Pos, const float CurrentTheta4)
 {
-    const float EPS = 1e-6f;
-    const float SINGULAR_TOL = 0.05f;
+    const float SINGULAR_TOL = 0.08f; // 奇异点容差，约等于 4.5 度
 
     Rotation_Matrix R06 = ZYZ_to_RotationMatrix(Coor_Pos);
 
     for (int i = 0; i < 4; ++i)
     {
-        if (State[i] == 0)
-        {
-            continue;
-        }
+        if (State[i] == 0) continue;
 
         float theta1 = Theta1[i];
         float theta2 = Theta2[i];
         float theta3 = Theta3[i];
 
-        Rotation_Matrix R01, R12, R23;
-        Rotation_Matrix R02, R03;
-        Rotation_Matrix R03_T;
-
-        R01 = Compute_Link_R(1, theta1);
-        R12 = Compute_Link_R(2, theta2);
-        R23 = Compute_Link_R(3, theta3);
-
-        R02 = RotationMatrix_Multiply(R01, R12);
-        R03 = RotationMatrix_Multiply(R02, R23);
-        R03_T = RotationMatrix_Transpose(R03);
-
+        Rotation_Matrix R01 = Compute_Link_R(1, theta1);
+        Rotation_Matrix R12 = Compute_Link_R(2, theta2);
+        Rotation_Matrix R23 = Compute_Link_R(3, theta3);
+        Rotation_Matrix R02 = RotationMatrix_Multiply(R01, R12);
+        Rotation_Matrix R03 = RotationMatrix_Multiply(R02, R23);
+        Rotation_Matrix R03_T = RotationMatrix_Transpose(R03);
         Rotation_Matrix R36 = RotationMatrix_Multiply(R03_T, R06);
 
         float r13 = R36.m[0][2];
@@ -412,81 +410,195 @@ void Inverse_Kinematics::Solve_Theta456(const Coordinates_Pose& Coor_Pos,const f
         float r33 = R36.m[2][2];
 
         float cos_th5 = r23;
-
         if (cos_th5 > 1.0f) cos_th5 = 1.0f;
         if (cos_th5 < -1.0f) cos_th5 = -1.0f;
 
         float sin_sq_th5 = 1.0f - cos_th5 * cos_th5;
-        if (sin_sq_th5 < 0.0f) sin_sq_th5 = 0.0f;
-        float sin_th5 = sqrtf(sin_sq_th5);
+        float sin_th5 = sqrtf(fmaxf(0.0f, sin_sq_th5));
 
-        if (sin_th5 < SINGULAR_TOL)
+        // 1. 计算原始数学解 (此时 t5_raw 永远为正)
+        float t4_raw = atan2f(r33, -r13);
+        float t5_raw = atan2f(sin_th5, cos_th5);
+        float t6_raw = atan2f(-r22, r21);
+
+        // 2. 【核心】连续性追踪 (解决单向卡死)
+        // 计算原始关节四与当前关节四的差值
+        float delta_t4 = t4_raw - CurrentTheta4;
+        while (delta_t4 >  PI) delta_t4 -= 2.0f * PI;
+        while (delta_t4 < -PI) delta_t4 += 2.0f * PI;
+
+        float t4_calc, t5_calc, t6_calc;
+
+        // 如果数学解要求关节四跳变超过 90度，说明目标跨越了奇异点极点！
+        // 此时我们不让关节四翻转，而是让关节五变成负数，关节六翻转。
+        if (fabsf(delta_t4) > PI / 2.0f)
         {
-            if (cos_th5 > 0.5f)
-            {
-                Theta5[i] = 0.0f;
-                Theta4[i] = CurrentTheta4;
-                Theta6[i] = atan2f(-R36.m[0][1], R36.m[0][0]) - Theta4[i];
-            }
-            else
-            {
-                Theta5[i] = PI;
-                Theta4[i] = CurrentTheta4;
-                Theta6[i] = -atan2f(R36.m[0][1], R36.m[0][0]) - Theta4[i];
-            }
+            t4_calc = t4_raw + PI;
+            t5_calc = -t5_raw;      // 允许关节五出现负数，平滑越过 0 度！
+            t6_calc = t6_raw + PI;
         }
         else
         {
-            // Theta4[i] = atan2f(r33, -r13);
-            // Theta5[i] = atan2f(sin_th5, cos_th5);
-            // Theta6[i] = atan2f(-r22, r21);
-
-            float t4_a = atan2f(r33, -r13);
-            float t5_a = atan2f(sin_th5, cos_th5);
-            float t6_a = atan2f(-r22, r21);
-
-            float t4_b = t4_a + PI;
-            float t5_b = -t5_a;
-            float t6_b = t6_a + PI;
-
-            float diff_a = t4_a - CurrentTheta4;
-            while (diff_a >  PI) diff_a -= 2.0f * PI;
-            while (diff_a < -PI) diff_a += 2.0f * PI;
-
-            float diff_b = t4_b - CurrentTheta4;
-            while (diff_b >  PI) diff_b -= 2.0f * PI;
-            while (diff_b < -PI) diff_b += 2.0f * PI;
-
-            if (fabsf(diff_a) <= fabsf(diff_b))
-            {
-                Theta4[i] = t4_a;
-                Theta5[i] = t5_a;
-                Theta6[i] = t6_a;
-            }
-            else
-            {
-                Theta4[i] = t4_b;
-                Theta5[i] = t5_b;
-                Theta6[i] = t6_b;
-            }
-
-            // Theta4[i] += PI;   // θ₄' = θ₄ + π
-            // Theta5[i] = -Theta5[i]; // θ₅' = -θ₅
-            // Theta6[i] += PI;   // θ₆' = θ₆ + π
+            t4_calc = t4_raw;
+            t5_calc = t5_raw;
+            t6_calc = t6_raw;
         }
 
-        auto normalize_angle = [](float angle) -> float {
-            angle = fmodf(angle, 2.0f * PI);
-            if (angle > PI) angle -= 2.0f * PI;
-            else if (angle < -PI) angle += 2.0f * PI;
-            return angle;
+        // 角度标准化 lambda
+        auto norm = [](float a) {
+            while (a >  PI) a -= 2.0f * PI;
+            while (a < -PI) a += 2.0f * PI;
+            return a;
         };
 
-        Theta4[i] = normalize_angle(Theta4[i]);
-        Theta5[i] = normalize_angle(Theta5[i]);
-        Theta6[i] = normalize_angle(Theta6[i]);
+        t4_calc = norm(t4_calc);
+        t6_calc = norm(t6_calc);
+
+        // 3. 【核心】工业级奇异点锁定 (解决改X坐标关节四乱转)
+        if (sin_th5 < SINGULAR_TOL)
+        {
+            // 使用“三次方阻尼曲线”，这会让靠近 0 度时的权重极度接近 0
+            float ratio = sin_th5 / SINGULAR_TOL;
+            float w = ratio * ratio * ratio;
+
+            float diff = norm(t4_calc - CurrentTheta4);
+
+            // 强力冻结关节四：在奇异点深处，w 几乎为 0，关节四死死锁在 CurrentTheta4 不动
+            t4_calc = CurrentTheta4 + diff * w;
+
+            // 既然关节四被冻结了，必须让关节六来补偿全部的旋转量
+            float total_z;
+            if (cos_th5 > 0.0f) total_z = atan2f(-R36.m[0][1], R36.m[0][0]);
+            else                total_z = -atan2f(R36.m[0][1], R36.m[0][0]);
+
+            t6_calc = norm(total_z - t4_calc);
+
+            // t5_calc 保持不变，它会自然、平滑地穿过 0 度
+        }
+
+        // 赋值输出
+        Theta4[i] = norm(t4_calc);
+        Theta5[i] = norm(t5_calc);
+        Theta6[i] = norm(t6_calc);
     }
 }
+
+
+
+// void Inverse_Kinematics::Solve_Theta456(const Coordinates_Pose& Coor_Pos,const float CurrentTheta4)
+// {
+//     const float EPS = 1e-6f;
+//     const float SINGULAR_TOL = 0.05f;
+//
+//     Rotation_Matrix R06 = ZYZ_to_RotationMatrix(Coor_Pos);
+//
+//     for (int i = 0; i < 4; ++i)
+//     {
+//         if (State[i] == 0)
+//         {
+//             continue;
+//         }
+//
+//         float theta1 = Theta1[i];
+//         float theta2 = Theta2[i];
+//         float theta3 = Theta3[i];
+//
+//         Rotation_Matrix R01, R12, R23;
+//         Rotation_Matrix R02, R03;
+//         Rotation_Matrix R03_T;
+//
+//         R01 = Compute_Link_R(1, theta1);
+//         R12 = Compute_Link_R(2, theta2);
+//         R23 = Compute_Link_R(3, theta3);
+//
+//         R02 = RotationMatrix_Multiply(R01, R12);
+//         R03 = RotationMatrix_Multiply(R02, R23);
+//         R03_T = RotationMatrix_Transpose(R03);
+//
+//         Rotation_Matrix R36 = RotationMatrix_Multiply(R03_T, R06);
+//
+//         float r13 = R36.m[0][2];
+//         float r21 = R36.m[1][0];
+//         float r22 = R36.m[1][1];
+//         float r23 = R36.m[1][2];
+//         float r33 = R36.m[2][2];
+//
+//         float cos_th5 = r23;
+//
+//         if (cos_th5 > 1.0f) cos_th5 = 1.0f;
+//         if (cos_th5 < -1.0f) cos_th5 = -1.0f;
+//
+//         float sin_sq_th5 = 1.0f - cos_th5 * cos_th5;
+//         if (sin_sq_th5 < 0.0f) sin_sq_th5 = 0.0f;
+//         float sin_th5 = sqrtf(sin_sq_th5);
+//
+//         if (sin_th5 < SINGULAR_TOL)
+//         {
+//             if (cos_th5 > 0.5f)
+//             {
+//                 Theta5[i] = 0.0f;
+//                 Theta4[i] = CurrentTheta4;
+//                 Theta6[i] = atan2f(-R36.m[0][1], R36.m[0][0]) - Theta4[i];
+//             }
+//             else
+//             {
+//                 Theta5[i] = PI;
+//                 Theta4[i] = CurrentTheta4;
+//                 Theta6[i] = -atan2f(R36.m[0][1], R36.m[0][0]) - Theta4[i];
+//             }
+//         }
+//         else
+//         {
+//             // Theta4[i] = atan2f(r33, -r13);
+//             // Theta5[i] = atan2f(sin_th5, cos_th5);
+//             // Theta6[i] = atan2f(-r22, r21);
+//
+//             float t4_a = atan2f(r33, -r13);
+//             float t5_a = atan2f(sin_th5, cos_th5);
+//             float t6_a = atan2f(-r22, r21);
+//
+//             float t4_b = t4_a + PI;
+//             float t5_b = -t5_a;
+//             float t6_b = t6_a + PI;
+//
+//             float diff_a = t4_a - CurrentTheta4;
+//             while (diff_a >  PI) diff_a -= 2.0f * PI;
+//             while (diff_a < -PI) diff_a += 2.0f * PI;
+//
+//             float diff_b = t4_b - CurrentTheta4;
+//             while (diff_b >  PI) diff_b -= 2.0f * PI;
+//             while (diff_b < -PI) diff_b += 2.0f * PI;
+//
+//             if (fabsf(diff_a) <= fabsf(diff_b))
+//             {
+//                 Theta4[i] = t4_a;
+//                 Theta5[i] = t5_a;
+//                 Theta6[i] = t6_a;
+//             }
+//             else
+//             {
+//                 Theta4[i] = t4_b;
+//                 Theta5[i] = t5_b;
+//                 Theta6[i] = t6_b;
+//             }
+//
+//             // Theta4[i] += PI;   // θ₄' = θ₄ + π
+//             // Theta5[i] = -Theta5[i]; // θ₅' = -θ₅
+//             // Theta6[i] += PI;   // θ₆' = θ₆ + π
+//         }
+//
+//         auto normalize_angle = [](float angle) -> float {
+//             angle = fmodf(angle, 2.0f * PI);
+//             if (angle > PI) angle -= 2.0f * PI;
+//             else if (angle < -PI) angle += 2.0f * PI;
+//             return angle;
+//         };
+//
+//         Theta4[i] = normalize_angle(Theta4[i]);
+//         Theta5[i] = normalize_angle(Theta5[i]);
+//         Theta6[i] = normalize_angle(Theta6[i]);
+//     }
+// }
 
 /**
  * @brief 从所有有效解中选择最优解

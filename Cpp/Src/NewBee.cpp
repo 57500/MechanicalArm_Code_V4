@@ -46,11 +46,13 @@ void NewBee::UpDate_Pad_Control()
 
     ik.Solve_FinalTheta(pd.Deta_CP,state.Current_Angle_Rad,state.Next_Best_Angle_Rad);
 
+    UART_SendFloat_sprintf(&huart1,state.Next_Best_Angle_Rad[4],2);
+
     pd.Control_Once(state.Current_Angle_Rad,state.Next_Best_Angle_Rad);
 
     Control_All_Motor(pd.JointRPM);
 
-    UART_SendFloat_sprintf(&huart1,state.Current_CP.z,2);
+
 
 }
 
