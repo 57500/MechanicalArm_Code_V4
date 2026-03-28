@@ -13,7 +13,7 @@ public:
 
     void Calculate_Target_CP(const Pad_Params_t Current_PD,const Coordinates_Pose Current_CP,const Pad_Lock PL,const float Sensitivity);
 
-    void Calculate_Target_Joint(const Pad_Params_t Current_PD,const Pad_Lock,const float Sensitivity);
+    void Calculate_Target_Joint(const Pad_Params_t Current_PD,const Pad_Lock PL,const float Sensitivity);
 
     void Control_Once(const float* current_angle_rad,const float* Best_Angle_Rad);
 
@@ -33,11 +33,21 @@ private:
     float smooth_w_beta = 0.0f;
     float smooth_w_gamma = 0.0f;
 
+    float smooth_joint1 = 0.0f;
+    float smooth_joint2 = 0.0f;
+    float smooth_joint3 = 0.0f;
+    float smooth_joint4 = 0.0f;
+    float smooth_joint5 = 0.0f;
+    float smooth_joint6 = 0.0f;
+
 
     static constexpr float CONTROL_DT=0.01f;
-    static constexpr uint8_t Limit=50;
+    // static constexpr uint8_t Limit=50;
     static constexpr float Z_limit=0.6;
+    static constexpr float Euler_Limit=0.01f;
+    static constexpr float Joint_Limit=0.1f;
     static constexpr float RAD_TO_RPM=9.549297f;
+    static constexpr float SMOOTH_FACTOR = 0.05f;
 
     Pad_Params_t Last_PD;
     Pad_Params_t Target_PD;

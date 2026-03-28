@@ -58,10 +58,10 @@ void NewBee::UpDate_Pad_Control()
     }
     else if (state.Current_Pad_Mode==Joint)
     {
+        pd.Calculate_Target_Joint(state.Current_Pad,state.Current_Pad_Lock,state.Pad_Cartesian_Sensitivity);
 
+        Control_All_Motor(pd.JointRPM);
     }
-
-
 
     state.Last_Pad=state.Current_Pad;
 }
@@ -214,6 +214,8 @@ void NewBee::Check_Pad_Mode(void)
     if (state.Current_Pad.btn_y==1&&state.Last_Pad.btn_y==0)
     {
         state.Current_Pad_Mode = static_cast<Pad_Mode>((state.Current_Pad_Mode + 1) % MODE_COUNT);
+        float JointRPM[6]={0};
+        Control_All_Motor(JointRPM);
     }
 }
 
@@ -240,6 +242,8 @@ void NewBee::Check_Pad_Lock()
     if (state.Current_Pad.btn_b==1&&state.Last_Pad.btn_b==0)
     {
         state.Current_Pad_Lock = static_cast<Pad_Lock>((state.Current_Pad_Lock + 1) % LOCK_COUNT);
+        float JointRPM[6]={0};
+        Control_All_Motor(JointRPM);
     }
 }
 

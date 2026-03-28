@@ -47,14 +47,13 @@ void PadControl::Calculate_Target_CP(const Pad_Params_t Current_PD, const Coordi
     // 针对只有 0 和 1 的肩键 (LB/RB)
     float target_w_gamma = ((float)Current_PD.btn_rb - (float)Current_PD.btn_lb) * Sensitivity;
 
-    float target_w_alpha = raw_rx * Sensitivity * 0.01f;
-    float target_w_beta  = raw_ry * Sensitivity * 0.01f;
+    float target_w_alpha = raw_rx * Sensitivity * Euler_Limit;
+    float target_w_beta  = raw_ry * Sensitivity * Euler_Limit;
 
     // 3. 核心魔法：一阶低通滤波 (平滑追赶)
     // SMOOTH_FACTOR 决定了柔顺程度，范围在 0.0 到 1.0 之间。
     // 值越小（如0.02），起步/刹车越柔顺（S型曲线越长），但手感越“肉”。
     // 值越大（如0.2），响应越快，但越生硬。100Hz下推荐 0.05 - 0.1。
-    const float SMOOTH_FACTOR = 0.05f;
 
     smooth_vx += SMOOTH_FACTOR * (target_vx - smooth_vx);
     smooth_vy += SMOOTH_FACTOR * (target_vy - smooth_vy);
@@ -108,9 +107,81 @@ void PadControl::Calculate_Target_CP(const Pad_Params_t Current_PD, const Coordi
     }
 }
 
-void PadControl::Calculate_Target_Joint(const Pad_Params_t Current_PD, const Pad_Lock, const float Sensitivity)
+void PadControl::Calculate_Target_Joint(const Pad_Params_t Current_PD, const Pad_Lock PL, const float Sensitivity)
 {
+    // 1. 摇杆死区消除 (Deadzone) - 极其重要！
+    // 手柄回弹很难绝对回0，一般在 -5 到 5 之间波动，不加死区机器人会一直漂移
+    const float DEADZONE = 10.0f;
 
+    float raw_lx = (fabs(Current_PD.lx) > DEADZONE) ? Current_PD.lx : 0.0f;
+    float raw_ly = (fabs(Current_PD.ly) > DEADZONE) ? Current_PD.ly : 0.0f;
+    float raw_rx = (fabs(Current_PD.rx) > DEADZONE) ? Current_PD.rx : 0.0f;
+    float raw_ry = (fabs(Current_PD.ry) > DEADZONE) ? Current_PD.ry : 0.0f;
+
+    // 2. 计算当前的“期望速度” (Target Velocity)
+    // 注意：这里只是算出了目标值，还没有加到坐标上
+    float target_joint1 = -raw_lx * Sensitivity*Joint_Limit;
+    float target_joint2 = -raw_ly * Sensitivity*Joint_Limit;
+
+    // 针对只有 0 和 99 的扳机键 (LT/RT)，直接算出期望的Z轴速度
+    float target_joint3 = ((float)Current_PD.rt - (float)Current_PD.lt) * Joint_Limit * Sensitivity;
+
+    // // 针对只有 0 和 1 的肩键 (LB/RB)
+    float target_joint6 = ((float)Current_PD.btn_rb - (float)Current_PD.btn_lb) * Sensitivity*Joint_Limit*100;
+
+    float target_joint4 = raw_rx * Sensitivity * Joint_Limit;
+    float target_joint5  = raw_ry * Sensitivity * Joint_Limit;
+
+    // 3. 核心魔法：一阶低通滤波 (平滑追赶)
+    // SMOOTH_FACTOR 决定了柔顺程度，范围在 0.0 到 1.0 之间。
+    // 值越小（如0.02），起步/刹车越柔顺（S型曲线越长），但手感越“肉”。
+    // 值越大（如0.2），响应越快，但越生硬。100Hz下推荐 0.05 - 0.1。
+
+    smooth_joint1 += SMOOTH_FACTOR * (target_joint1 - smooth_joint1);
+    smooth_joint2 += SMOOTH_FACTOR * (target_joint2 - smooth_joint2);
+    smooth_joint3 += SMOOTH_FACTOR * (target_joint3 - smooth_joint3);
+    smooth_joint4 += SMOOTH_FACTOR * (target_joint4 - smooth_joint4);
+    smooth_joint5 += SMOOTH_FACTOR * (target_joint5 - smooth_joint5);
+    smooth_joint6 += SMOOTH_FACTOR * (target_joint6 - smooth_joint6);
+
+    switch (PL)
+    {
+    case None:
+        JointRPM[0]=smooth_joint1;
+        JointRPM[1]=smooth_joint2;
+        JointRPM[2]=smooth_joint3;
+        JointRPM[3]=smooth_joint4;
+        JointRPM[4]=smooth_joint5;
+        JointRPM[5]=smooth_joint6;
+        break;
+
+    case Lock1:
+        JointRPM[0]=smooth_joint1;
+        break;
+
+    case Lock2:
+        JointRPM[1]=smooth_joint2;
+        break;
+
+    case Lock3:
+        JointRPM[2]=smooth_joint3;
+        break;
+
+    case Lock4:
+        JointRPM[3]=smooth_joint4;
+        break;
+
+    case Lock5:
+        JointRPM[4]=smooth_joint5;
+        break;
+
+    case Lock6:
+        JointRPM[5]=smooth_joint6;
+        break;
+
+    default:
+        break;
+    }
 }
 
 
