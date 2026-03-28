@@ -23,9 +23,18 @@ public:
 
 private:
 
+    // 在 PadControl.h 中添加：
+    float smooth_vx = 0.0f;
+    float smooth_vy = 0.0f;
+    float smooth_vz = 0.0f;
+    float smooth_w_alpha = 0.0f;
+    float smooth_w_beta = 0.0f;
+    float smooth_w_gamma = 0.0f;
+
+
     static constexpr float CONTROL_DT=0.01f;
     static constexpr float Sensitivity=0.8f;
-    static constexpr uint8_t Limit=20;
+    static constexpr uint8_t Limit=50;
     static constexpr float Z_limit=0.6;
     static constexpr float RAD_TO_RPM=9.549297f;
 

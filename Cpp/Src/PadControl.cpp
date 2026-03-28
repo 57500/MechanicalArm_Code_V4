@@ -27,39 +27,90 @@ void PadControl::Clear()
 
 void PadControl::Calculate_Deta_CP(const Pad_Params_t Current_PD, const Coordinates_Pose Current_CP)
 {
+    // 1. 摇杆死区消除 (Deadzone) - 极其重要！
+    // 手柄回弹很难绝对回0，一般在 -5 到 5 之间波动，不加死区机器人会一直漂移
+    const float DEADZONE = 10.0f;
 
-    auto applyRateLimit = [](int8_t current, int8_t last, uint8_t limit) -> int8_t
-    {
-        int16_t diff = current - last; // 用 int16_t 防止 int8_t 溢出
-        if (diff > limit)  return last + limit;
-        if (diff < -limit) return last - limit;
-        return current;
-    };
+    float raw_lx = (fabs(Current_PD.lx) > DEADZONE) ? Current_PD.lx : 0.0f;
+    float raw_ly = (fabs(Current_PD.ly) > DEADZONE) ? Current_PD.ly : 0.0f;
+    float raw_rx = (fabs(Current_PD.rx) > DEADZONE) ? Current_PD.rx : 0.0f;
+    float raw_ry = (fabs(Current_PD.ry) > DEADZONE) ? Current_PD.ry : 0.0f;
 
-    Target_PD.lx=applyRateLimit(Current_PD.lx,Target_PD.lx,Limit);
-    Target_PD.ly=applyRateLimit(Current_PD.ly,Target_PD.ly,Limit);
-    Target_PD.rt=Current_PD.rt*Z_limit;
-    Target_PD.lt=Current_PD.lt*Z_limit;
-    Target_PD.rx=applyRateLimit(Current_PD.rx,Target_PD.rx,Limit);
-    Target_PD.ry=applyRateLimit(Current_PD.ry,Target_PD.ry,Limit);
-    Target_PD.btn_lb=Current_PD.btn_lb;
-    Target_PD.btn_rb=Current_PD.btn_rb;
-    
+    // 2. 计算当前的“期望速度” (Target Velocity)
+    // 注意：这里只是算出了目标值，还没有加到坐标上
+    float target_vx = -raw_ly * Sensitivity;
+    float target_vy = -raw_lx * Sensitivity;
 
-    Last_PD = Target_PD;
+    // 针对只有 0 和 99 的扳机键 (LT/RT)，直接算出期望的Z轴速度
+    float target_vz = ((float)Current_PD.rt - (float)Current_PD.lt) * Z_limit * Sensitivity;
 
+    // 针对只有 0 和 1 的肩键 (LB/RB)
+    float target_w_gamma = ((float)Current_PD.btn_rb - (float)Current_PD.btn_lb) * Sensitivity;
+
+    float target_w_alpha = raw_rx * Sensitivity * 0.01f;
+    float target_w_beta  = raw_ry * Sensitivity * 0.01f;
+
+    // 3. 核心魔法：一阶低通滤波 (平滑追赶)
+    // SMOOTH_FACTOR 决定了柔顺程度，范围在 0.0 到 1.0 之间。
+    // 值越小（如0.02），起步/刹车越柔顺（S型曲线越长），但手感越“肉”。
+    // 值越大（如0.2），响应越快，但越生硬。100Hz下推荐 0.05 - 0.1。
+    const float SMOOTH_FACTOR = 0.1f;
+
+    smooth_vx += SMOOTH_FACTOR * (target_vx - smooth_vx);
+    smooth_vy += SMOOTH_FACTOR * (target_vy - smooth_vy);
+    smooth_vz += SMOOTH_FACTOR * (target_vz - smooth_vz);
+
+    smooth_w_alpha += SMOOTH_FACTOR * (target_w_alpha - smooth_w_alpha);
+    smooth_w_beta  += SMOOTH_FACTOR * (target_w_beta  - smooth_w_beta);
+    smooth_w_gamma += SMOOTH_FACTOR * (target_w_gamma - smooth_w_gamma);
+
+    // 4. 将平滑后的速度积分，得出最终位姿
     Deta_CP = Current_CP;
-    Deta_CP.x = -(float)Target_PD.ly * Sensitivity * CONTROL_DT + Current_CP.x;
-    Deta_CP.y = -(float)Target_PD.lx * Sensitivity * CONTROL_DT + Current_CP.y;
-    Deta_CP.z = (float)Target_PD.rt * Sensitivity * CONTROL_DT -(float)Target_PD.lt * Sensitivity * CONTROL_DT+Current_CP.z;
 
-    Deta_CP.alpha=(float)Target_PD.rx*Sensitivity * CONTROL_DT*0.01f + Current_CP.alpha;
-    Deta_CP.beta=(float)Target_PD.ry*Sensitivity * CONTROL_DT*0.01f + Current_CP.beta;
-    Deta_CP.gamma=(float)Target_PD.btn_rb * Sensitivity * CONTROL_DT -(float)Target_PD.btn_lb * Sensitivity * CONTROL_DT+Current_CP.gamma;
+    Deta_CP.x += smooth_vx * CONTROL_DT;
+    Deta_CP.y += smooth_vy * CONTROL_DT;
+    Deta_CP.z += smooth_vz * CONTROL_DT;
 
-
-
+    Deta_CP.alpha += smooth_w_alpha * CONTROL_DT;
+    Deta_CP.beta  += smooth_w_beta  * CONTROL_DT;
+    Deta_CP.gamma += smooth_w_gamma * CONTROL_DT;
 }
+
+
+
+// void PadControl::Calculate_Deta_CP(const Pad_Params_t Current_PD, const Coordinates_Pose Current_CP)
+// {
+//
+//     auto applyRateLimit = [](int8_t current, int8_t last, uint8_t limit) -> int8_t
+//     {
+//         int16_t diff = current - last; // 用 int16_t 防止 int8_t 溢出
+//         if (diff > limit)  return last + limit;
+//         if (diff < -limit) return last - limit;
+//         return current;
+//     };
+//
+//     Target_PD.lx=applyRateLimit(Current_PD.lx,Target_PD.lx,Limit);
+//     Target_PD.ly=applyRateLimit(Current_PD.ly,Target_PD.ly,Limit);
+//     Target_PD.rt=Current_PD.rt*Z_limit;
+//     Target_PD.lt=Current_PD.lt*Z_limit;
+//     Target_PD.rx=applyRateLimit(Current_PD.rx,Target_PD.rx,Limit);
+//     Target_PD.ry=applyRateLimit(Current_PD.ry,Target_PD.ry,Limit);
+//     Target_PD.btn_lb=Current_PD.btn_lb;
+//     Target_PD.btn_rb=Current_PD.btn_rb;
+//
+//
+//     Last_PD = Target_PD;
+//
+//     Deta_CP = Current_CP;
+//     Deta_CP.x = -(float)Target_PD.ly * Sensitivity * CONTROL_DT + Current_CP.x;
+//     Deta_CP.y = -(float)Target_PD.lx * Sensitivity * CONTROL_DT + Current_CP.y;
+//     Deta_CP.z = (float)Target_PD.rt * Sensitivity * CONTROL_DT -(float)Target_PD.lt * Sensitivity * CONTROL_DT+Current_CP.z;
+//
+//     Deta_CP.alpha=(float)Target_PD.rx*Sensitivity * CONTROL_DT*0.01f + Current_CP.alpha;
+//     Deta_CP.beta=(float)Target_PD.ry*Sensitivity * CONTROL_DT*0.01f + Current_CP.beta;
+//     Deta_CP.gamma=(float)Target_PD.btn_rb * Sensitivity * CONTROL_DT -(float)Target_PD.btn_lb * Sensitivity * CONTROL_DT+Current_CP.gamma;
+//
+// }
 
 void PadControl::Control_Once(const float* current_angle_rad, const float* Best_Angle_Rad)
 {
