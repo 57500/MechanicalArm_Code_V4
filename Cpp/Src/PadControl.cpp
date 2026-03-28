@@ -54,7 +54,7 @@ void PadControl::Calculate_Deta_CP(const Pad_Params_t Current_PD, const Coordina
     // SMOOTH_FACTOR 决定了柔顺程度，范围在 0.0 到 1.0 之间。
     // 值越小（如0.02），起步/刹车越柔顺（S型曲线越长），但手感越“肉”。
     // 值越大（如0.2），响应越快，但越生硬。100Hz下推荐 0.05 - 0.1。
-    const float SMOOTH_FACTOR = 0.1f;
+    const float SMOOTH_FACTOR = 0.05f;
 
     smooth_vx += SMOOTH_FACTOR * (target_vx - smooth_vx);
     smooth_vy += SMOOTH_FACTOR * (target_vy - smooth_vy);
@@ -77,7 +77,7 @@ void PadControl::Calculate_Deta_CP(const Pad_Params_t Current_PD, const Coordina
 }
 
 
-
+////简单限幅
 // void PadControl::Calculate_Deta_CP(const Pad_Params_t Current_PD, const Coordinates_Pose Current_CP)
 // {
 //
