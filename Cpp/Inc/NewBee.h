@@ -36,6 +36,10 @@ public:
     void UpDate_Current_Angle_Rad(void);
     void UpDate_Current_Pad(const Pad_Params_t pd);
 
+    void Check_Pad_Mode(void);
+    void Check_Pad_Sensitivity(void);
+    void Check_Pad_Lock(void);
+
 private:
     ForwardKinematics fk;
     Inverse_Kinematics ik;

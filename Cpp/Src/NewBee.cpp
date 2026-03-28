@@ -39,21 +39,31 @@ void NewBee::UpDate()
 
 void NewBee::UpDate_Pad_Control()
 {
-    UpDate_Current_Angle_Rad();
-    UpDate_Current_CP();
+    Check_Pad_Mode();
 
-    pd.Calculate_Deta_CP(state.Current_Pad,state.Current_CP);
+    Check_Pad_Sensitivity();
 
-    ik.Solve_FinalTheta(pd.Deta_CP,state.Current_Angle_Rad,state.Next_Best_Angle_Rad);
+    Check_Pad_Lock();
 
-    // UART_SendFloat_sprintf(&huart1,state.Next_Best_Angle_Rad[4],2);
+    if (state.Current_Pad_Mode==Cartesian)
+    {
+        UpDate_Current_Angle_Rad();
+        UpDate_Current_CP();
 
-    pd.Control_Once(state.Current_Angle_Rad,state.Next_Best_Angle_Rad);
+        pd.Calculate_Target_CP(state.Current_Pad,state.Current_CP,state.Current_Pad_Lock,state.Pad_Cartesian_Sensitivity);
+        ik.Solve_FinalTheta(pd.Target_CP,state.Current_Angle_Rad,state.Next_Best_Angle_Rad);
+        pd.Control_Once(state.Current_Angle_Rad,state.Next_Best_Angle_Rad);
 
-    Control_All_Motor(pd.JointRPM);
+        Control_All_Motor(pd.JointRPM);
+    }
+    else if (state.Current_Pad_Mode==Joint)
+    {
+
+    }
 
 
 
+    state.Last_Pad=state.Current_Pad;
 }
 
 void NewBee::Control_All_Motor(const float* rpm)
@@ -199,5 +209,37 @@ void NewBee::UpDate_Current_Pad(const Pad_Params_t pd)
     state.Current_Pad=pd;
 }
 
+void NewBee::Check_Pad_Mode(void)
+{
+    if (state.Current_Pad.btn_y==1&&state.Last_Pad.btn_y==0)
+    {
+        state.Current_Pad_Mode = static_cast<Pad_Mode>((state.Current_Pad_Mode + 1) % MODE_COUNT);
+    }
+}
 
+void NewBee::Check_Pad_Sensitivity(void)
+{
+    if (state.Current_Pad.btn_x==1&&state.Last_Pad.btn_x==0)
+    {
+        if (state.Current_Pad_Mode==Cartesian)
+        {
+            if (state.Pad_Cartesian_Sensitivity<=2)
+            {
+                state.Pad_Cartesian_Sensitivity+=0.1f;
+            }
+            else
+            {
+                state.Pad_Cartesian_Sensitivity=0.0f;
+            }
+        }
+    }
+}
+
+void NewBee::Check_Pad_Lock()
+{
+    if (state.Current_Pad.btn_b==1&&state.Last_Pad.btn_b==0)
+    {
+        state.Current_Pad_Lock = static_cast<Pad_Lock>((state.Current_Pad_Lock + 1) % LOCK_COUNT);
+    }
+}
 

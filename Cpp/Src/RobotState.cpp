@@ -13,11 +13,7 @@
 
 RobotState::RobotState()
 {
-    memset(Current_Angle_Rad,0,sizeof(Current_Angle_Rad));
-    memset(Next_Best_Angle_Rad,0,sizeof(Next_Best_Angle_Rad));
-    Current_CP={0};
-    Target_CP={0};
-    Current_Pad={0};
+    Clear();
 }
 
 void RobotState::Clear()
@@ -27,6 +23,10 @@ void RobotState::Clear()
     Current_CP={0};
     Target_CP={0};
     Current_Pad={0};
+    Last_Pad={0};
+    Current_Pad_Mode=Standby;
+    Pad_Cartesian_Sensitivity=0.8f;
+    Current_Pad_Lock=None;
 }
 
 

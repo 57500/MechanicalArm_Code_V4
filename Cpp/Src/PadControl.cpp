@@ -12,7 +12,7 @@
 PadControl::PadControl()
 {
     memset(JointRPM,0,sizeof(float)*6);
-    Deta_CP={};
+    Target_CP={};
     Target_PD = {};
     Last_PD={};
 }
@@ -20,12 +20,12 @@ PadControl::PadControl()
 void PadControl::Clear()
 {
     memset(JointRPM,0,sizeof(float)*6);
-    Deta_CP={};
+    Target_CP={};
     Target_PD = {};
     Last_PD={};
 }
 
-void PadControl::Calculate_Deta_CP(const Pad_Params_t Current_PD, const Coordinates_Pose Current_CP)
+void PadControl::Calculate_Target_CP(const Pad_Params_t Current_PD, const Coordinates_Pose Current_CP, const Pad_Lock PL, const float Sensitivity)
 {
     // 1. 摇杆死区消除 (Deadzone) - 极其重要！
     // 手柄回弹很难绝对回0，一般在 -5 到 5 之间波动，不加死区机器人会一直漂移
@@ -65,15 +65,52 @@ void PadControl::Calculate_Deta_CP(const Pad_Params_t Current_PD, const Coordina
     smooth_w_gamma += SMOOTH_FACTOR * (target_w_gamma - smooth_w_gamma);
 
     // 4. 将平滑后的速度积分，得出最终位姿
-    Deta_CP = Current_CP;
+    Target_CP = Current_CP;
 
-    Deta_CP.x += smooth_vx * CONTROL_DT;
-    Deta_CP.y += smooth_vy * CONTROL_DT;
-    Deta_CP.z += smooth_vz * CONTROL_DT;
+    switch (PL)
+    {
+    case None:
+        Target_CP.x += smooth_vx * CONTROL_DT;
+        Target_CP.y += smooth_vy * CONTROL_DT;
+        Target_CP.z += smooth_vz * CONTROL_DT;
 
-    Deta_CP.alpha += smooth_w_alpha * CONTROL_DT;
-    Deta_CP.beta  += smooth_w_beta  * CONTROL_DT;
-    Deta_CP.gamma += smooth_w_gamma * CONTROL_DT;
+        Target_CP.alpha += smooth_w_alpha * CONTROL_DT;
+        Target_CP.beta  += smooth_w_beta  * CONTROL_DT;
+        Target_CP.gamma += smooth_w_gamma * CONTROL_DT;
+        break;
+
+    case Lock1:
+        Target_CP.x += smooth_vx * CONTROL_DT;
+        break;
+
+    case Lock2:
+        Target_CP.y += smooth_vy * CONTROL_DT;
+        break;
+
+    case Lock3:
+        Target_CP.z += smooth_vz * CONTROL_DT;
+        break;
+
+    case Lock4:
+        Target_CP.alpha += smooth_w_alpha * CONTROL_DT;
+        break;
+
+    case Lock5:
+        Target_CP.beta += smooth_w_beta * CONTROL_DT;
+        break;
+
+    case Lock6:
+        Target_CP.gamma += smooth_w_gamma * CONTROL_DT;
+        break;
+
+    default:
+        break;
+    }
+}
+
+void PadControl::Calculate_Target_Joint(const Pad_Params_t Current_PD, const Pad_Lock, const float Sensitivity)
+{
+
 }
 
 

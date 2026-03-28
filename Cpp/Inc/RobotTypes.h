@@ -52,6 +52,26 @@ typedef struct
 
 }Pad_Params_t;
 
+enum Pad_Mode
+{
+    Standby, 
+    Cartesian,
+    Joint,
+    MODE_COUNT
+};
+
+enum Pad_Lock
+{
+    None,
+    Lock1,
+    Lock2,
+    Lock3,
+    Lock4,
+    Lock5,
+    Lock6,
+    LOCK_COUNT
+};
+
 static constexpr DH_Params_t DH_Params[6]=
 {{0,0,161,0},
  {-PI/2,0,0,-PI/2},
@@ -60,6 +80,8 @@ static constexpr DH_Params_t DH_Params[6]=
  {PI/2,0,0,-PI/2},
  {-PI/2,0,130,0}
 };
+
+
 
 
 

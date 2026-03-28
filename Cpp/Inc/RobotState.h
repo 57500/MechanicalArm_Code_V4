@@ -24,6 +24,14 @@ public:
 
     Pad_Params_t Current_Pad;
 
+    Pad_Params_t Last_Pad;
+
+    Pad_Mode Current_Pad_Mode;
+
+    float Pad_Cartesian_Sensitivity;
+
+    Pad_Lock Current_Pad_Lock;
+
 };
 
 #endif //MECHANICALARM_CODE_V2_ROBOTSTATE_H
