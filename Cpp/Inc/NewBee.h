@@ -39,6 +39,7 @@ public:
     void Check_Pad_Mode(void);
     void Check_Pad_Sensitivity(void);
     void Check_Pad_Lock(void);
+    void Check_Pad_Home(void);
 
 private:
     ForwardKinematics fk;

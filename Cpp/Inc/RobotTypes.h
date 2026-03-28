@@ -81,7 +81,7 @@ static constexpr DH_Params_t DH_Params[6]=
  {-PI/2,0,130,0}
 };
 
-
+static constexpr Coordinates_Pose Home={177.63f,0.0f,176.0f,0.0f,1.57f,3.14f};
 
 
 

@@ -144,6 +144,8 @@ void PadControl::Calculate_Target_Joint(const Pad_Params_t Current_PD, const Pad
     smooth_joint5 += SMOOTH_FACTOR * (target_joint5 - smooth_joint5);
     smooth_joint6 += SMOOTH_FACTOR * (target_joint6 - smooth_joint6);
 
+    memset(JointRPM, 0, sizeof(float) * 6);
+
     switch (PL)
     {
     case None:

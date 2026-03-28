@@ -27,6 +27,8 @@ void RobotState::Clear()
     Current_Pad_Mode=Standby;
     Pad_Cartesian_Sensitivity=0.8f;
     Current_Pad_Lock=None;
+    Pad_Home=false;
+    is_first_home=true;
 }
 
 

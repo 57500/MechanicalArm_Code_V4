@@ -32,6 +32,10 @@ public:
 
     Pad_Lock Current_Pad_Lock;
 
+    bool Pad_Home;
+
+    bool is_first_home;
+
 };
 
 #endif //MECHANICALARM_CODE_V2_ROBOTSTATE_H
