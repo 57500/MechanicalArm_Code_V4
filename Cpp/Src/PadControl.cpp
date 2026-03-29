@@ -40,8 +40,7 @@ void PadControl::Clear()
 
 void PadControl::Calculate_Target_CP(const Pad_Params_t Current_PD, const Coordinates_Pose Current_CP, const Pad_Lock PL, const float Sensitivity)
 {
-    // 1. 摇杆死区消除 (Deadzone) - 极其重要！
-    // 手柄回弹很难绝对回0，一般在 -5 到 5 之间波动，不加死区机器人会一直漂移
+    //死区
     const float DEADZONE = 10.0f;
 
     float raw_lx = (fabs(Current_PD.lx) > DEADZONE) ? Current_PD.lx : 0.0f;
@@ -49,12 +48,11 @@ void PadControl::Calculate_Target_CP(const Pad_Params_t Current_PD, const Coordi
     float raw_rx = (fabs(Current_PD.rx) > DEADZONE) ? Current_PD.rx : 0.0f;
     float raw_ry = (fabs(Current_PD.ry) > DEADZONE) ? Current_PD.ry : 0.0f;
 
-    // 2. 计算当前的“期望速度” (Target Velocity)
-    // 注意：这里只是算出了目标值，还没有加到坐标上
+    //计算期望速度
     float target_vx = -raw_ly * Sensitivity;
     float target_vy = -raw_lx * Sensitivity;
 
-    // 针对只有 0 和 99 的扳机键 (LT/RT)，直接算出期望的Z轴速度
+    // 针对只有 0 和 99 的扳机键 (LT/RT)
     float target_vz = ((float)Current_PD.rt - (float)Current_PD.lt) * Z_limit * Sensitivity;
 
     // 针对只有 0 和 1 的肩键 (LB/RB)
@@ -63,10 +61,8 @@ void PadControl::Calculate_Target_CP(const Pad_Params_t Current_PD, const Coordi
     float target_w_alpha = raw_rx * Sensitivity * Euler_Limit;
     float target_w_beta  = raw_ry * Sensitivity * Euler_Limit;
 
-    // 3. 核心魔法：一阶低通滤波 (平滑追赶)
-    // SMOOTH_FACTOR 决定了柔顺程度，范围在 0.0 到 1.0 之间。
-    // 值越小（如0.02），起步/刹车越柔顺（S型曲线越长），但手感越“肉”。
-    // 值越大（如0.2），响应越快，但越生硬。100Hz下推荐 0.05 - 0.1。
+    //一阶低通滤波
+    // SMOOTH_FACTOR 决定柔顺程度
 
     smooth_vx += SMOOTH_FACTOR * (target_vx - smooth_vx);
     smooth_vy += SMOOTH_FACTOR * (target_vy - smooth_vy);
@@ -76,9 +72,10 @@ void PadControl::Calculate_Target_CP(const Pad_Params_t Current_PD, const Coordi
     smooth_w_beta  += SMOOTH_FACTOR * (target_w_beta  - smooth_w_beta);
     smooth_w_gamma += SMOOTH_FACTOR * (target_w_gamma - smooth_w_gamma);
 
-    // 4. 将平滑后的速度积分，得出最终位姿
+    // 速度积分，得出最终位姿
     Target_CP = Current_CP;
 
+    //选择锁定位姿
     switch (PL)
     {
     case None:
@@ -122,8 +119,7 @@ void PadControl::Calculate_Target_CP(const Pad_Params_t Current_PD, const Coordi
 
 void PadControl::Calculate_Target_Joint(const Pad_Params_t Current_PD, const Pad_Lock PL, const float Sensitivity)
 {
-    // 1. 摇杆死区消除 (Deadzone) - 极其重要！
-    // 手柄回弹很难绝对回0，一般在 -5 到 5 之间波动，不加死区机器人会一直漂移
+    // 死区
     const float DEADZONE = 10.0f;
 
     float raw_lx = (fabs(Current_PD.lx) > DEADZONE) ? Current_PD.lx : 0.0f;
@@ -131,24 +127,21 @@ void PadControl::Calculate_Target_Joint(const Pad_Params_t Current_PD, const Pad
     float raw_rx = (fabs(Current_PD.rx) > DEADZONE) ? Current_PD.rx : 0.0f;
     float raw_ry = (fabs(Current_PD.ry) > DEADZONE) ? Current_PD.ry : 0.0f;
 
-    // 2. 计算当前的“期望速度” (Target Velocity)
-    // 注意：这里只是算出了目标值，还没有加到坐标上
+    // 期望速度
     float target_joint1 = -raw_lx * Sensitivity*Joint_Limit;
     float target_joint2 = raw_ly * Sensitivity*Joint_Limit;
 
-    // 针对只有 0 和 99 的扳机键 (LT/RT)，直接算出期望的Z轴速度
+    // 针对只有 0 和 99 的扳机键 (LT/RT)
     float target_joint3 = ((float)Current_PD.lt - (float)Current_PD.rt) * Joint_Limit * Sensitivity;
 
-    // // 针对只有 0 和 1 的肩键 (LB/RB)
+    // 针对只有 0 和 1 的肩键 (LB/RB)
     float target_joint6 = ((float)Current_PD.btn_rb - (float)Current_PD.btn_lb) * Sensitivity*Joint_Limit*100;
 
     float target_joint4 = raw_rx * Sensitivity * Joint_Limit;
     float target_joint5  = raw_ry * Sensitivity * Joint_Limit*0.7;
 
-    // 3. 核心魔法：一阶低通滤波 (平滑追赶)
-    // SMOOTH_FACTOR 决定了柔顺程度，范围在 0.0 到 1.0 之间。
-    // 值越小（如0.02），起步/刹车越柔顺（S型曲线越长），但手感越“肉”。
-    // 值越大（如0.2），响应越快，但越生硬。100Hz下推荐 0.05 - 0.1。
+    // 一阶低通滤波
+    // SMOOTH_FACTOR 决定了柔顺程度
 
     smooth_joint1 += SMOOTH_FACTOR * (target_joint1 - smooth_joint1);
     smooth_joint2 += SMOOTH_FACTOR * (target_joint2 - smooth_joint2);
@@ -159,6 +152,7 @@ void PadControl::Calculate_Target_Joint(const Pad_Params_t Current_PD, const Pad
 
     memset(JointRPM, 0, sizeof(float) * 6);
 
+    //选择锁定轴
     switch (PL)
     {
     case None:
@@ -201,6 +195,7 @@ void PadControl::Calculate_Target_Joint(const Pad_Params_t Current_PD, const Pad
 
 void PadControl::Calculate_Target_ToolCP(const Pad_Params_t Current_PD, const Coordinates_Pose Current_CP, const float Sensitivity,Rotation_Matrix ZYZ_RM)
 {
+
     float target_z=(float)Current_PD.dpad_y*Sensitivity;
 
 

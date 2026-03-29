@@ -686,7 +686,10 @@ bool Inverse_Kinematics::SelectBestSolution(const float current_angles[6],float 
     }
     else
     {
-        memset(best_angles, 0, sizeof(float) * 6);
+        for (int j = 0; j < 6; ++j)
+        {
+            best_angles[j] = current_angles[j];
+        }
         return false;
     }
 
