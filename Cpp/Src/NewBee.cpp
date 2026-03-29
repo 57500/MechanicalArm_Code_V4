@@ -66,6 +66,17 @@ void NewBee::UpDate_Pad_Control()
 
             Control_All_Motor(pd.JointRPM);
         }
+        else if (state.Current_Pad_Mode==Tool)
+        {
+            UpDate_Current_Angle_Rad();
+            UpDate_Current_CP();
+
+            pd.Calculate_Target_ToolCP(state.Current_Pad,state.Current_CP,state.Pad_Cartesian_Sensitivity,ik.ZYZ_to_RotationMatrix(state.Current_CP));
+            ik.Solve_FinalTheta(pd.Target_CP,state.Current_Angle_Rad,state.Next_Best_Angle_Rad);
+            pd.Control_Once(state.Current_Angle_Rad,state.Next_Best_Angle_Rad);
+
+            Control_All_Motor(pd.JointRPM);
+        }
     }
     else
     {
@@ -247,8 +258,8 @@ void NewBee::Check_Pad_Mode(void)
     if (state.Current_Pad.btn_y==1&&state.Last_Pad.btn_y==0)
     {
         state.Current_Pad_Mode = static_cast<Pad_Mode>((state.Current_Pad_Mode + 1) % MODE_COUNT);
-        float JointRPM[6]={0};
-        Control_All_Motor(JointRPM);
+        pd.Clear();
+        Control_All_Motor(pd.JointRPM);
     }
 }
 
@@ -275,8 +286,8 @@ void NewBee::Check_Pad_Lock()
     if (state.Current_Pad.btn_b==1&&state.Last_Pad.btn_b==0)
     {
         state.Current_Pad_Lock = static_cast<Pad_Lock>((state.Current_Pad_Lock + 1) % LOCK_COUNT);
-        float JointRPM[6]={0};
-        Control_All_Motor(JointRPM);
+        pd.Clear();
+        Control_All_Motor(pd.JointRPM);
     }
 }
 
@@ -284,8 +295,8 @@ void NewBee::Check_Pad_Home(void)
 {
     if (state.Current_Pad.btn_a==1&&state.Last_Pad.btn_a==0)
     {
-        float JointRPM[6]={0};
-        Control_All_Motor(JointRPM);
+        pd.Clear();
+        Control_All_Motor(pd.JointRPM);
         state.is_first_home = true;
         tp.Clear();
         state.Pad_Home=!state.Pad_Home;

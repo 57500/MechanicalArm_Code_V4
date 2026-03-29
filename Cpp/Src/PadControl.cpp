@@ -11,10 +11,7 @@
 
 PadControl::PadControl()
 {
-    memset(JointRPM,0,sizeof(float)*6);
-    Target_CP={};
-    Target_PD = {};
-    Last_PD={};
+    Clear();
 }
 
 void PadControl::Clear()
@@ -23,6 +20,22 @@ void PadControl::Clear()
     Target_CP={};
     Target_PD = {};
     Last_PD={};
+
+    smooth_vx = 0.0f;
+    smooth_vy = 0.0f;
+    smooth_vz = 0.0f;
+    smooth_w_alpha = 0.0f;
+    smooth_w_beta = 0.0f;
+    smooth_w_gamma = 0.0f;
+
+    smooth_joint1 = 0.0f;
+    smooth_joint2 = 0.0f;
+    smooth_joint3 = 0.0f;
+    smooth_joint4 = 0.0f;
+    smooth_joint5 = 0.0f;
+    smooth_joint6 = 0.0f;
+
+    smooth_tool_z = 0.0f;
 }
 
 void PadControl::Calculate_Target_CP(const Pad_Params_t Current_PD, const Coordinates_Pose Current_CP, const Pad_Lock PL, const float Sensitivity)
@@ -186,7 +199,28 @@ void PadControl::Calculate_Target_Joint(const Pad_Params_t Current_PD, const Pad
     }
 }
 
+void PadControl::Calculate_Target_ToolCP(const Pad_Params_t Current_PD, const Coordinates_Pose Current_CP, const float Sensitivity,Rotation_Matrix ZYZ_RM)
+{
+    float target_z=(float)Current_PD.dpad_y*Sensitivity;
 
+
+    smooth_tool_z += SMOOTH_FACTOR * (target_z - smooth_tool_z);
+    float v_world_x = ZYZ_RM.m[0][2] * smooth_tool_z;
+    float v_world_y = ZYZ_RM.m[1][2] * smooth_tool_z;
+    float v_world_z = ZYZ_RM.m[2][2] * smooth_tool_z;
+
+    float target_w_gamma = ((float)Current_PD.btn_rb - (float)Current_PD.btn_lb) * Sensitivity;
+    smooth_w_gamma += SMOOTH_FACTOR * (target_w_gamma - smooth_w_gamma);
+
+    Target_CP=Current_CP;
+
+    Target_CP.x += v_world_x * CONTROL_DT*60;
+    Target_CP.y += v_world_y * CONTROL_DT*60;
+    Target_CP.z += v_world_z * CONTROL_DT*60;
+
+    Target_CP.gamma += smooth_w_gamma * CONTROL_DT;
+
+}
 
 ////简单限幅
 // void PadControl::Calculate_Deta_CP(const Pad_Params_t Current_PD, const Coordinates_Pose Current_CP)

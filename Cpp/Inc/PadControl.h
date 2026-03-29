@@ -15,6 +15,8 @@ public:
 
     void Calculate_Target_Joint(const Pad_Params_t Current_PD,const Pad_Lock PL,const float Sensitivity);
 
+    void Calculate_Target_ToolCP(const Pad_Params_t Current_PD,const Coordinates_Pose Current_CP,const float Sensitivity,Rotation_Matrix ZYZ_RM);
+
     void Control_Once(const float* current_angle_rad,const float* Best_Angle_Rad);
 
     void Clear();
@@ -26,19 +28,21 @@ public:
 private:
 
     // 在 PadControl.h 中添加：
-    float smooth_vx = 0.0f;
-    float smooth_vy = 0.0f;
-    float smooth_vz = 0.0f;
-    float smooth_w_alpha = 0.0f;
-    float smooth_w_beta = 0.0f;
-    float smooth_w_gamma = 0.0f;
+    float smooth_vx;
+    float smooth_vy;
+    float smooth_vz;
+    float smooth_w_alpha;
+    float smooth_w_beta;
+    float smooth_w_gamma;
 
-    float smooth_joint1 = 0.0f;
-    float smooth_joint2 = 0.0f;
-    float smooth_joint3 = 0.0f;
-    float smooth_joint4 = 0.0f;
-    float smooth_joint5 = 0.0f;
-    float smooth_joint6 = 0.0f;
+    float smooth_joint1;
+    float smooth_joint2;
+    float smooth_joint3;
+    float smooth_joint4;
+    float smooth_joint5;
+    float smooth_joint6;
+
+    float smooth_tool_z;
 
 
     static constexpr float CONTROL_DT=0.01f;
