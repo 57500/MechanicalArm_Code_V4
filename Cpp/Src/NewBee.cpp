@@ -260,6 +260,28 @@ void NewBee::Check_Pad_Mode(void)
         state.Current_Pad_Mode = static_cast<Pad_Mode>((state.Current_Pad_Mode + 1) % MODE_COUNT);
         pd.Clear();
         Control_All_Motor(pd.JointRPM);
+
+        switch (state.Current_Pad_Mode)
+        {
+        case Standby:
+            HAL_UART_Transmit(&huart1,(uint8_t*)"Mode: Standby\n",strlen("Mode: Standby\n"),100);
+            break;
+
+        case Cartesian:
+            HAL_UART_Transmit(&huart1,(uint8_t*)"Mode: Standby\n",strlen("Mode: Standby\n"),100);
+            break;
+
+        case Joint:
+            HAL_UART_Transmit(&huart1,(uint8_t*)"Mode: Joint\n",strlen("Mode: Joint\n"),100);
+            break;
+
+        case Tool:
+            HAL_UART_Transmit(&huart1,(uint8_t*)"Mode: Tool\n",strlen("Mode: Tool\n"),100);
+            break;
+
+        default:
+            break;
+        }
     }
 }
 
@@ -267,17 +289,18 @@ void NewBee::Check_Pad_Sensitivity(void)
 {
     if (state.Current_Pad.btn_x==1&&state.Last_Pad.btn_x==0)
     {
-        if (state.Current_Pad_Mode==Cartesian)
+        if (state.Pad_Cartesian_Sensitivity<=2)
         {
-            if (state.Pad_Cartesian_Sensitivity<=2)
-            {
-                state.Pad_Cartesian_Sensitivity+=0.1f;
-            }
-            else
-            {
-                state.Pad_Cartesian_Sensitivity=0.1f;
-            }
+            state.Pad_Cartesian_Sensitivity+=0.1f;
         }
+        else
+        {
+            state.Pad_Cartesian_Sensitivity=0.1f;
+        }
+
+        char buffer[64];
+        sprintf(buffer, "Sensitivity: %.1f \r\n", state.Pad_Cartesian_Sensitivity);
+        HAL_UART_Transmit(&huart1, (uint8_t*)buffer, strlen(buffer), HAL_MAX_DELAY);
     }
 }
 
@@ -288,6 +311,40 @@ void NewBee::Check_Pad_Lock()
         state.Current_Pad_Lock = static_cast<Pad_Lock>((state.Current_Pad_Lock + 1) % LOCK_COUNT);
         pd.Clear();
         Control_All_Motor(pd.JointRPM);
+
+        switch (state.Current_Pad_Lock)
+        {
+        case None:
+            HAL_UART_Transmit(&huart1,(uint8_t*)"Mode: None\n",strlen("Mode: None\n"),100);
+            break;
+
+        case Lock1:
+            HAL_UART_Transmit(&huart1,(uint8_t*)"Mode: Lock1\n",strlen("Mode: Lock1\n"),100);
+            break;
+
+        case Lock2:
+            HAL_UART_Transmit(&huart1,(uint8_t*)"Mode: Lock2\n",strlen("Mode: Lock2\n"),100);
+            break;
+
+        case Lock3:
+            HAL_UART_Transmit(&huart1,(uint8_t*)"Mode: Lock3\n",strlen("Mode: Lock3\n"),100);
+            break;
+
+        case Lock4:
+            HAL_UART_Transmit(&huart1,(uint8_t*)"Mode: Lock4\n",strlen("Mode: Lock4\n"),100);
+            break;
+
+        case Lock5:
+            HAL_UART_Transmit(&huart1,(uint8_t*)"Mode: Lock5\n",strlen("Mode: Lock5\n"),100);
+            break;
+
+        case Lock6:
+            HAL_UART_Transmit(&huart1,(uint8_t*)"Mode: Lock6\n",strlen("Mode: Lock6\n"),100);
+            break;
+
+        default:
+            break;
+        }
     }
 }
 
@@ -300,5 +357,7 @@ void NewBee::Check_Pad_Home(void)
         state.is_first_home = true;
         tp.Clear();
         state.Pad_Home=!state.Pad_Home;
+
+        HAL_UART_Transmit(&huart1,(uint8_t*)"Home\n",strlen("Home\n"),100);
     }
 }

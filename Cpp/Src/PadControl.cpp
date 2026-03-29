@@ -134,16 +134,16 @@ void PadControl::Calculate_Target_Joint(const Pad_Params_t Current_PD, const Pad
     // 2. 计算当前的“期望速度” (Target Velocity)
     // 注意：这里只是算出了目标值，还没有加到坐标上
     float target_joint1 = -raw_lx * Sensitivity*Joint_Limit;
-    float target_joint2 = -raw_ly * Sensitivity*Joint_Limit;
+    float target_joint2 = raw_ly * Sensitivity*Joint_Limit;
 
     // 针对只有 0 和 99 的扳机键 (LT/RT)，直接算出期望的Z轴速度
-    float target_joint3 = ((float)Current_PD.rt - (float)Current_PD.lt) * Joint_Limit * Sensitivity;
+    float target_joint3 = ((float)Current_PD.lt - (float)Current_PD.rt) * Joint_Limit * Sensitivity;
 
     // // 针对只有 0 和 1 的肩键 (LB/RB)
     float target_joint6 = ((float)Current_PD.btn_rb - (float)Current_PD.btn_lb) * Sensitivity*Joint_Limit*100;
 
     float target_joint4 = raw_rx * Sensitivity * Joint_Limit;
-    float target_joint5  = raw_ry * Sensitivity * Joint_Limit;
+    float target_joint5  = raw_ry * Sensitivity * Joint_Limit*0.5;
 
     // 3. 核心魔法：一阶低通滤波 (平滑追赶)
     // SMOOTH_FACTOR 决定了柔顺程度，范围在 0.0 到 1.0 之间。
