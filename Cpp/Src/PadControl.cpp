@@ -143,7 +143,7 @@ void PadControl::Calculate_Target_Joint(const Pad_Params_t Current_PD, const Pad
     float target_joint6 = ((float)Current_PD.btn_rb - (float)Current_PD.btn_lb) * Sensitivity*Joint_Limit*100;
 
     float target_joint4 = raw_rx * Sensitivity * Joint_Limit;
-    float target_joint5  = raw_ry * Sensitivity * Joint_Limit*0.5;
+    float target_joint5  = raw_ry * Sensitivity * Joint_Limit*0.7;
 
     // 3. 核心魔法：一阶低通滤波 (平滑追赶)
     // SMOOTH_FACTOR 决定了柔顺程度，范围在 0.0 到 1.0 之间。

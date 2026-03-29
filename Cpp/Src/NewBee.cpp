@@ -268,7 +268,7 @@ void NewBee::Check_Pad_Mode(void)
             break;
 
         case Cartesian:
-            HAL_UART_Transmit(&huart1,(uint8_t*)"Mode: Standby\n",strlen("Mode: Standby\n"),100);
+            HAL_UART_Transmit(&huart1,(uint8_t*)"Mode: Cartesian\n",strlen("Mode: Cartesian\n"),100);
             break;
 
         case Joint:
