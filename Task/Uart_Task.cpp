@@ -8,29 +8,27 @@
 #include "C_Hal_Bridge.h"
 #include "Robot_Task.h"
 
-enum TaskName
-{
-    NONE,
-    PTP,
-    PAD
-};
-
+//记录上一次任务
 static TaskName LastTask=PTP;
+
+//串口数据缓存
+static uint8_t Date[RX_BUFFER_SIZE1];
 
 void Uart_Task(void *pvParameters)
 {
-    uint8_t Date[RX_BUFFER_SIZE1];
-
     while(1)
     {
+        //等待串口数据
         if (xQueueReceive(Uart_Queue_H, Date, portMAX_DELAY) != pdTRUE) continue;
 
         TaskName CurrentTask = NONE;
 
+        //解析当前任务模式名称
         if (strncmp((char*)Date, "PTP:", 4) == 0) CurrentTask = PTP;
         else if (strncmp((char*)Date, "PAD:", 4) == 0) CurrentTask = PAD;
         else continue;
 
+        //判断是否需要切换任务前进行急停，如果是PTP任务则一定急停
         if ((CurrentTask != LastTask && LastTask != NONE)||(CurrentTask==PTP&&LastTask!=NONE))
         {
             Stop_Flag = true;
@@ -45,6 +43,7 @@ void Uart_Task(void *pvParameters)
             }
         }
 
+        //解析PTP任务数据
         if (CurrentTask==PTP)
         {
             char *token;
@@ -87,14 +86,14 @@ void Uart_Task(void *pvParameters)
         {
             char *token;
             int count = 0;
-            int16_t pad_data[16] = {0}; // 用于存放 14 个手柄整型数据
+            int16_t pad_data[16] = {0}; // 用于存放 16 个手柄整型数据
 
             token = strtok((char*)Date + 4, ",");
 
-            // 循环分割字符串，最多提取 14 个参数
+            // 循环分割字符串，最多提取 16 个参数
             while(token != NULL && count < 16)
             {
-                // 使用 atof 将字符串转为整数
+                // 使用 atoi 将字符串转为整数
                 pad_data[count] = atoi(token);
                 count++;
 
@@ -122,11 +121,13 @@ void Uart_Task(void *pvParameters)
                 Pad_Params.btn_m1=pad_data[14];
                 Pad_Params.btn_m2=pad_data[15];
 
+                //发送数据
                 xQueueSend(Pad_Queue_H,&Pad_Params,pdMS_TO_TICKS(20));
 
             }
         }
 
+        //判断是否需要切换任务，如果是PTP任务则再次进入PTP
         if ((CurrentTask != LastTask && LastTask != NONE)||(CurrentTask==PTP&&LastTask!=NONE))
         {
             if (CurrentTask == PTP)
@@ -143,12 +144,17 @@ void Uart_Task(void *pvParameters)
             xTaskNotifyGive(Current_Task);
         }
 
-
+        //记录上一次任务名称
         LastTask=CurrentTask;
 
     }
 }
 
+/**
+ * @brief 串口回调哈桑农户
+ * @param 串口句柄
+ * @return NULL
+ */
 extern "C" void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
     if(huart->Instance == USART1)

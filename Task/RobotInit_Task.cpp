@@ -7,37 +7,51 @@
 
 NewBee nb;
 
+//PTP任务
 TaskHandle_t PTP_Handle;
 static StaticTask_t PTP_Tcb;
 static StackType_t PTP_Stack[1024];
 
+//PAD任务
 TaskHandle_t PAD_Handle;
 static StaticTask_t PAD_Tcb;
 static StackType_t PAD_Stack[512];
 
+//串口任务
 TaskHandle_t Uart_Handle;
 static StaticTask_t Uart_Tcb;
 static StackType_t Uart_Stack[512];
 
+//串口队列
 QueueHandle_t Uart_Queue_H;
 static StaticQueue_t Uart_Queue_Tcb;
 static uint8_t Uart_Queue_Stack[5*RX_BUFFER_SIZE1];
 
+//定时器一队列
 QueueHandle_t Tim1_Queue_H;
 static StaticQueue_t Tim1_Queue_Tcb;
 static uint8_t Tim1_Queue_Stack[5*sizeof(uint8_t)];
 
+//手柄队列
 QueueHandle_t Pad_Queue_H;
 static StaticQueue_t Pad_Queue_Tcb;
 static uint8_t Pad_Queue_Stack[5*sizeof(Pad_Params_t)];
 
+//二进制停止信号量
 static StaticSemaphore_t Stop_Semaphore_Stack;
 SemaphoreHandle_t Stop_Semaphore_H;
 
-TaskHandle_t Current_Task=NULL;
+//停止标志位
 volatile bool Stop_Flag=false;
 
+//当前任务句柄
+TaskHandle_t Current_Task=NULL;
 
+/**
+ * @brief 任务初始化函数
+ * @param NULL
+ * @return NULL
+ */
 void RobotTask_Init(void)
 {
     Stop_Semaphore_H=xSemaphoreCreateBinaryStatic(&Stop_Semaphore_Stack);
@@ -57,6 +71,7 @@ void RobotTask_Init(void)
     PAD_Handle=xTaskCreateStatic(PAD_Task,"PAD",512,
         NULL,3,PAD_Stack,&PAD_Tcb);
 
+    //默认任务为PTP任务
     Current_Task=PTP_Handle;
     HAL_TIM_Base_Start_IT(&htim1);
     xTaskNotifyGive(Current_Task);

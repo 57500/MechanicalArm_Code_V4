@@ -10,11 +10,21 @@
 #include "Inverse_Kinematics.h"
 #include "MotorControl.h"
 
+/**
+ * @brief 轨迹规划的构造函数
+ * @param NULL
+ * @return NULL
+ */
 Trajectory_Planning::Trajectory_Planning()
 {
     Clear();
 }
 
+/**
+ * @brief 重置所有过程量
+ * @param NULL
+ * @return NULL
+ */
 void Trajectory_Planning::Clear(void)
 {
     is_first_run=1;
@@ -28,6 +38,13 @@ void Trajectory_Planning::Clear(void)
 
 }
 
+/**
+ * @brief 依据路程比例K计算当前位姿与目标位姿之间对应的插值位姿
+ * @param Target_CP：目标位姿
+ * @param Current_CP：当前位姿
+ * @param K：路程比例
+ * @return 返回插值位姿
+ */
 Coordinates_Pose Trajectory_Planning::Interpolation(Coordinates_Pose Target_CP, Coordinates_Pose Current_CP, float K)
 {
     if(K > 1.0f) K = 1.0f;
@@ -59,6 +76,12 @@ Coordinates_Pose Trajectory_Planning::Interpolation(Coordinates_Pose Target_CP, 
     return Middle_CP;
 }
 
+/**
+ * @brief 在计算S型曲线速度中规划直线轨迹
+ * @param Target_CP：目标位姿
+ * @param Current_CP：当前位姿
+ * @return NULL
+ */
 void Trajectory_Planning::S_Curve_Profile(Coordinates_Pose Target_CP, Coordinates_Pose Current_CP)
 {
     Clear();
@@ -145,6 +168,11 @@ void Trajectory_Planning::S_Curve_Profile(Coordinates_Pose Target_CP, Coordinate
     }
 }
 
+/**
+ * @brief 更新当前关节角度
+ * @param current_angle_rad：当前关节角度
+ * @return NULL
+ */
 void Trajectory_Planning::Update_Current_Angle_Rad(const float* current_angle_rad)
 {
     for (int i = 0; i < 6; i++)
@@ -153,6 +181,11 @@ void Trajectory_Planning::Update_Current_Angle_Rad(const float* current_angle_ra
     }
 }
 
+/**
+ * @brief 更新期望关节角度
+ * @param Best_Angle_Rad：期望角度
+ * @return NULL
+ */
 void Trajectory_Planning::Update_Target_Angle_Rad(const float* Best_Angle_Rad)
 {
     for (int i = 0; i < 6; i++)
@@ -171,6 +204,11 @@ void Trajectory_Planning::Update_Target_Angle_Rad(const float* Best_Angle_Rad)
     }
 }
 
+/**
+ * @brief 位置环计算关节转速
+ * @param NULL
+ * @return NULL
+ */
 void Trajectory_Planning::Calculate_Current_JointRPM(void)
 {
     if (Count <= 1)
@@ -189,6 +227,12 @@ void Trajectory_Planning::Calculate_Current_JointRPM(void)
     }
 }
 
+/**
+ * @brief PTP模式单次控制
+ * @param current_angle_rad：当前关节角度
+ * @param Best_Angle_Rad：期望关节角度
+ * @return NULL
+ */
 void Trajectory_Planning::Control_Once(const float* current_angle_rad,const float* Best_Angle_Rad)
 {
     Count++;
@@ -197,5 +241,4 @@ void Trajectory_Planning::Control_Once(const float* current_angle_rad,const floa
     Update_Current_Angle_Rad(current_angle_rad);
     Update_Target_Angle_Rad(Best_Angle_Rad);
     Calculate_Current_JointRPM();
-
 }

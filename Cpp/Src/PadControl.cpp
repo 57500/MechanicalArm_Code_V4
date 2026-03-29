@@ -9,11 +9,21 @@
 
 #include "usart.h"
 
+/**
+ * @brief 手柄控制的构造函数
+ * @param NULL
+ * @return NULL
+ */
 PadControl::PadControl()
 {
     Clear();
 }
 
+/**
+ * @brief 清理手柄控制的全部过程量
+ * @param NULL
+ * @return NULL
+ */
 void PadControl::Clear()
 {
     memset(JointRPM,0,sizeof(float)*6);
@@ -38,6 +48,15 @@ void PadControl::Clear()
     smooth_tool_z = 0.0f;
 }
 
+/**
+ * @brief 计算笛卡尔模式下的目标位姿
+ * @param Current_PD：当前手柄参数
+ * @param Current_CP：当前位姿
+ * @param PL：锁定位姿信息
+ * @param Sensitivity：灵敏度
+ * @return NULL
+ * @note 左遥感控制xy，左右扳机控制z；右摇杆控制alpha beta，左右肩键控制gamma
+ */
 void PadControl::Calculate_Target_CP(const Pad_Params_t Current_PD, const Coordinates_Pose Current_CP, const Pad_Lock PL, const float Sensitivity)
 {
     //死区
@@ -117,6 +136,14 @@ void PadControl::Calculate_Target_CP(const Pad_Params_t Current_PD, const Coordi
     }
 }
 
+/**
+ * @brief 计算关节模式下各关节角度
+ * @param Current_PD：当前手柄参数
+ * @param PL：锁定关节信息
+ * @param Sensitivity：灵敏度
+ * @return NULL
+ * @note 左遥感控制J1J2，左右扳机控制J3；右摇杆控制J4J5，左右肩键控制J6
+ */
 void PadControl::Calculate_Target_Joint(const Pad_Params_t Current_PD, const Pad_Lock PL, const float Sensitivity)
 {
     // 死区
@@ -193,12 +220,20 @@ void PadControl::Calculate_Target_Joint(const Pad_Params_t Current_PD, const Pad
     }
 }
 
+/**
+ * @brief 计算工具坐标系模式下的目标位姿
+ * @param Current_PD：当前手柄参数
+ * @param Current_CP：当前位姿
+ * @param Sensitivity：灵敏度
+ * @param ZYZ_RM：末端旋转矩阵
+ * @return NULL
+ * @note dpad_y控制前后，左右肩键控制J6
+ */
 void PadControl::Calculate_Target_ToolCP(const Pad_Params_t Current_PD, const Coordinates_Pose Current_CP, const float Sensitivity,Rotation_Matrix ZYZ_RM)
 {
-
     float target_z=(float)Current_PD.dpad_y*Sensitivity;
 
-
+    //计算世界坐标系下的坐标速度
     smooth_tool_z += SMOOTH_FACTOR * (target_z - smooth_tool_z);
     float v_world_x = ZYZ_RM.m[0][2] * smooth_tool_z;
     float v_world_y = ZYZ_RM.m[1][2] * smooth_tool_z;
@@ -207,6 +242,7 @@ void PadControl::Calculate_Target_ToolCP(const Pad_Params_t Current_PD, const Co
     float target_w_gamma = ((float)Current_PD.btn_rb - (float)Current_PD.btn_lb) * Sensitivity;
     smooth_w_gamma += SMOOTH_FACTOR * (target_w_gamma - smooth_w_gamma);
 
+    //速度积分得目标位姿
     Target_CP=Current_CP;
 
     Target_CP.x += v_world_x * CONTROL_DT*60;
@@ -252,6 +288,12 @@ void PadControl::Calculate_Target_ToolCP(const Pad_Params_t Current_PD, const Co
 //
 // }
 
+/**
+ * @brief 手柄控制所有电机
+ * @param current_angle_rad：当前关节角度
+ * @param Best_Angle_Rad：计算出的最佳关节角度
+ * @return NULL
+ */
 void PadControl::Control_Once(const float* current_angle_rad, const float* Best_Angle_Rad)
 {
     for (int i=0;i<6;i++)

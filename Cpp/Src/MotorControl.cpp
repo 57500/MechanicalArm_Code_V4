@@ -9,7 +9,11 @@
 
 #include "usart.h"
 
-
+/**
+ * @brief 初始化
+ * @param addr：地址
+ * @return NULL
+ */
 MotorControl::MotorControl(uint8_t Addr)
 {
     if (Addr < 1 || Addr > 6)
@@ -188,6 +192,11 @@ void MotorControl::Change_MotorAddr(uint8_t Change_Addr)
     Addr=Change_Addr;
 }
 
+/**
+ * @brief 读取电机角度
+ * @param addr：地址
+ * @return NULL
+ */
 void MotorControl::Read_Motor_Pos(uint8_t addr)
 {
     uint8_t Data[3]={0};
@@ -196,8 +205,4 @@ void MotorControl::Read_Motor_Pos(uint8_t addr)
     Data[2]=0x6B;
 
     MyCAN1_Transmit(Data,3);
-    // if (MyCAN1_Transmit(Data,3)==true)
-    // {
-    //     UART_SendFloat_sprintf(&huart1,Data[0],1);
-    // }
 }

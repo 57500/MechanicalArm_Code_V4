@@ -9,6 +9,7 @@
 
 static constexpr float PI = 3.14159265358979323846f;
 
+//DH参数
 typedef struct
 {
     float alpha;
@@ -17,6 +18,7 @@ typedef struct
     float theta;
 }DH_Params_t;
 
+//位姿参数
 typedef struct
 {
     float x;
@@ -27,12 +29,13 @@ typedef struct
     float gamma;
 }Coordinates_Pose;
 
-
+//旋转矩阵
 typedef struct
 {
     float m[3][3];
 }Rotation_Matrix;
 
+//手柄参数
 typedef struct
 {
     int8_t lx;
@@ -58,6 +61,7 @@ typedef struct
 
 }Pad_Params_t;
 
+//手柄控制模式
 enum Pad_Mode
 {
     Standby, 
@@ -67,6 +71,7 @@ enum Pad_Mode
     MODE_COUNT
 };
 
+//手柄控制锁定信息
 enum Pad_Lock
 {
     None,
@@ -79,6 +84,14 @@ enum Pad_Lock
     LOCK_COUNT
 };
 
+//任务名称
+enum TaskName
+{
+    NONE,
+    PTP,
+    PAD
+};
+
 static constexpr DH_Params_t DH_Params[6]=
 {{0,0,161,0},
  {-PI/2,0,0,-PI/2},
@@ -88,6 +101,7 @@ static constexpr DH_Params_t DH_Params[6]=
  {-PI/2,0,130,0}
 };
 
+//回零位姿
 static constexpr Coordinates_Pose Home={177.63f,0.0f,176.0f,0.0f,1.57f,3.14f};
 
 

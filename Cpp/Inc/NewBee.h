@@ -20,7 +20,7 @@ public:
 
     void Clear(void);
 
-    void UpDate(void);
+    void UpDate_PTP_Control(void);
 
     void UpDate_Pad_Control();
 

@@ -10,12 +10,21 @@
 #include "MotorControl.h"
 #include "usart.h"
 
-
+/**
+ * @brief 状态管理的构造函数
+ * @param NULL
+ * @return NULL
+ */
 RobotState::RobotState()
 {
     Clear();
 }
 
+/**
+ * @brief 清理所有状态
+ * @param NULL
+ * @return NULL
+ */
 void RobotState::Clear()
 {
     memset(Current_Angle_Rad,0,sizeof(Current_Angle_Rad));

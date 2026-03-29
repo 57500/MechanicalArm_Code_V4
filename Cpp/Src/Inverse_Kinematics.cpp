@@ -46,6 +46,8 @@ void Inverse_Kinematics::Wrist_Position_Optimized(const Coordinates_Pose& Coor_P
 {
     float alpha = Coor_Pos.alpha;
     float beta  = Coor_Pos.beta;
+
+    //腕点坐标与gamma无关
     // float gamma = Coor_Pos[5];
 
     // 预计算三角函数
@@ -58,9 +60,10 @@ void Inverse_Kinematics::Wrist_Position_Optimized(const Coordinates_Pose& Coor_P
     float R22 = cb;       // R[2][2]
 
     // 计算腕点坐标
-    Wrist_Vector[0] = Coor_Pos.x + End_WristVector[2] * R02;  // x - 130 * R[0][2]
-    Wrist_Vector[1] = Coor_Pos.y + End_WristVector[2] * R12;  // y - 130 * R[1][2]
-    Wrist_Vector[2] = Coor_Pos.z + End_WristVector[2] * R22;  // z - 130 * R[2][2]
+    //End_WristVector为腕点在关节六坐标系下的坐标
+    Wrist_Vector[0] = Coor_Pos.x + End_WristVector[2] * R02;
+    Wrist_Vector[1] = Coor_Pos.y + End_WristVector[2] * R12;
+    Wrist_Vector[2] = Coor_Pos.z + End_WristVector[2] * R22;
 }
 
 /**
@@ -143,6 +146,7 @@ void Inverse_Kinematics::Solve_Theta3(void)
     float b = -74000.0f;     // -400*d₄ = -400 * 185
     float c = R - 76493.6169f; // R - (a₃² + d₄² + a₂²)
 
+    //State记录有解组，后同
     float theta3[2]={0,0};
     if (Solve_Trig(a,b,c,theta3)==false)
     {
@@ -184,6 +188,7 @@ void Inverse_Kinematics::Solve_Theta2(void)
     float a_coeff, b_coeff, c_const;
     float z_target = Wrist_Vector[2] - 161.0f;
 
+    //判断theta3对应组是否有解，如果无解则跳过
     if (State[0]==1&&State[1]==1)
     {
         f1 = 47.63f * cosf(Theta3[0]) - 185.0f * sinf(Theta3[0]) + 200.0f;
@@ -369,19 +374,10 @@ Rotation_Matrix Inverse_Kinematics::ZYZ_to_RotationMatrix(const Coordinates_Pose
 }
 
 /**
- * @brief 求解腕部关节角 θ₄, θ₅, θ₆
- * @param Coor_Pos 目标末端位姿
- * @return NULL
- * @note 为每个有效的前三关节解计算对应的腕部关节角
- */
-
-/**
  * @brief 求解腕部关节角 θ₄, θ₅, θ₆ (已加入工业级奇异点平滑阻尼)
  * @param Coor_Pos 目标末端位姿
  * @param CurrentTheta4 当前真实的第4轴角度 (用于奇异点平滑过渡)
  */
-
-
 void Inverse_Kinematics::Solve_Theta456(const Coordinates_Pose& Coor_Pos, const float CurrentTheta4)
 {
     const float SINGULAR_TOL = 0.08f; // 奇异点容差，约等于 4.5 度
@@ -417,12 +413,12 @@ void Inverse_Kinematics::Solve_Theta456(const Coordinates_Pose& Coor_Pos, const 
         float sin_sq_th5 = 1.0f - cos_th5 * cos_th5;
         float sin_th5 = sqrtf(fmaxf(0.0f, sin_sq_th5));
 
-        // 1. 计算原始数学解 (此时 t5_raw 永远为正)
+        // 计算原始数学解 (此时 t5_raw 永远为正)
         float t4_raw = atan2f(r33, -r13);
         float t5_raw = atan2f(sin_th5, cos_th5);
         float t6_raw = atan2f(-r22, r21);
 
-        // 2. 【核心】连续性追踪 (解决单向卡死)
+        // 连续性追踪 (解决单向卡死)
         // 计算原始关节四与当前关节四的差值
         float delta_t4 = t4_raw - CurrentTheta4;
         while (delta_t4 >  PI) delta_t4 -= 2.0f * PI;
@@ -430,12 +426,11 @@ void Inverse_Kinematics::Solve_Theta456(const Coordinates_Pose& Coor_Pos, const 
 
         float t4_calc, t5_calc, t6_calc;
 
-        // 如果数学解要求关节四跳变超过 90度，说明目标跨越了奇异点极点！
-        // 此时我们不让关节四翻转，而是让关节五变成负数，关节六翻转。
+        // 当跨过奇异点时关节四角度变换过大，此时将关节四的角度变换转换到对机械臂磕碰影响较小的关节六
         if (fabsf(delta_t4) > PI / 2.0f)
         {
             t4_calc = t4_raw + PI;
-            t5_calc = -t5_raw;      // 允许关节五出现负数，平滑越过 0 度！
+            t5_calc = -t5_raw;      // 允许关节五出现负数，平滑越过 0 度
             t6_calc = t6_raw + PI;
         }
         else
@@ -455,10 +450,10 @@ void Inverse_Kinematics::Solve_Theta456(const Coordinates_Pose& Coor_Pos, const 
         t4_calc = norm(t4_calc);
         t6_calc = norm(t6_calc);
 
-        // 3. 【核心】工业级奇异点锁定 (解决改X坐标关节四乱转)
+        // 奇异点锁定，当进入奇异点时直接冻结关节四，在关节六进行补偿
         if (sin_th5 < SINGULAR_TOL)
         {
-            // 使用“三次方阻尼曲线”，这会让靠近 0 度时的权重极度接近 0
+            // 使用三次方阻尼曲线，让靠近 0 度时的权重极度接近 0
             float ratio = sin_th5 / SINGULAR_TOL;
             float w = ratio * ratio * ratio;
 
@@ -467,14 +462,14 @@ void Inverse_Kinematics::Solve_Theta456(const Coordinates_Pose& Coor_Pos, const 
             // 强力冻结关节四：在奇异点深处，w 几乎为 0，关节四死死锁在 CurrentTheta4 不动
             t4_calc = CurrentTheta4 + diff * w;
 
-            // 既然关节四被冻结了，必须让关节六来补偿全部的旋转量
+            // 关节六来补偿全部旋转量
             float total_z;
             if (cos_th5 > 0.0f) total_z = atan2f(-R36.m[0][1], R36.m[0][0]);
             else                total_z = -atan2f(R36.m[0][1], R36.m[0][0]);
 
             t6_calc = norm(total_z - t4_calc);
 
-            // t5_calc 保持不变，它会自然、平滑地穿过 0 度
+            // t5_calc 保持不变，直接依赖数学解
         }
 
         // 赋值输出
@@ -485,7 +480,7 @@ void Inverse_Kinematics::Solve_Theta456(const Coordinates_Pose& Coor_Pos, const 
 }
 
 
-
+////优化前的欧拉角求解函数，会有奇异点问题
 // void Inverse_Kinematics::Solve_Theta456(const Coordinates_Pose& Coor_Pos,const float CurrentTheta4)
 // {
 //     const float EPS = 1e-6f;
@@ -605,7 +600,7 @@ void Inverse_Kinematics::Solve_Theta456(const Coordinates_Pose& Coor_Pos, const 
  * @brief 从所有有效解中选择最优解
  * @param current_angles 当前关节角度数组
  * @param best_angles 输出最优关节角度数组
- * @return bool 成功找到最优解返回 true，否则返回 false
+ * @return bool 成功找到最优解返回 true，否则返回 false，角度不变
  * @note 根据加权平方距离选择与当前角度最接近的解
  */
 bool Inverse_Kinematics::SelectBestSolution(const float current_angles[6],float best_angles[6])
@@ -660,22 +655,6 @@ bool Inverse_Kinematics::SelectBestSolution(const float current_angles[6],float 
         best_angles[4] = Theta5[best_index];
         best_angles[5] = Theta6[best_index];
 
-        // float target_angles[6] = {
-        //     Theta1[best_index], Theta2[best_index], Theta3[best_index],
-        //     Theta4[best_index], Theta5[best_index], Theta6[best_index]
-        // };
-
-        // for (int j = 0; j < 6; ++j)
-        // {
-        //
-        //     float diff = target_angles[j] - current_angles[j];
-        //
-        //     while (diff > PI) diff -= 2 * PI;
-        //     while (diff < -PI) diff += 2 * PI;
-        //
-        //     best_angles[j] = current_angles[j] + diff;
-        // }
-
         for (int j = 0; j < 6; ++j)
         {
             while (best_angles[j] >  PI) best_angles[j] -= 2.0f * PI;
@@ -706,6 +685,7 @@ bool Inverse_Kinematics::SelectBestSolution(const float current_angles[6],float 
 bool Inverse_Kinematics::Solve_FinalTheta(const Coordinates_Pose& target_pose,
     const float current_angles[6],float best_angles[6])
 {
+    //检查参数有效性
     if (!current_angles || !best_angles)
     {
         return false;

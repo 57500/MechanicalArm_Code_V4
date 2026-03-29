@@ -44,9 +44,11 @@ void Init_DWT(void)
 // sprintf(buffer, "执行时间: %.3f ms (周期数: %lu)\r\n", time_ms, total_cycles);
 // HAL_UART_Transmit(&huart1, (uint8_t*)buffer, strlen(buffer), HAL_MAX_DELAY);
 
+
+
+//握手函数
 void CppMain(void)
 {
     Init_DWT();
     RobotTask_Init();
-
 }
