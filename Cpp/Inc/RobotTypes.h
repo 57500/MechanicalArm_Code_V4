@@ -27,6 +27,12 @@ typedef struct
     float gamma;
 }Coordinates_Pose;
 
+
+typedef struct
+{
+    float m[3][3];
+}Rotation_Matrix;
+
 typedef struct
 {
     int8_t lx;
@@ -57,6 +63,7 @@ enum Pad_Mode
     Standby, 
     Cartesian,
     Joint,
+    Tool,
     MODE_COUNT
 };
 

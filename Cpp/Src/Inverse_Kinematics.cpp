@@ -8,6 +8,7 @@
 #include <cstring>
 
 #include "usart.h"
+#include "RobotTypes.h"
 
 /**
  * @brief 逆运动学类的构造函数
@@ -287,7 +288,7 @@ void Inverse_Kinematics::Solve_Theta1(void)
  * @param B 第二个旋转矩阵
  * @return 旋转矩阵乘积 C = A × B
  */
-Inverse_Kinematics::Rotation_Matrix Inverse_Kinematics::RotationMatrix_Multiply(const Rotation_Matrix& A, const Rotation_Matrix& B)
+Rotation_Matrix Inverse_Kinematics::RotationMatrix_Multiply(const Rotation_Matrix& A, const Rotation_Matrix& B)
 {
     Rotation_Matrix C;
     for (uint8_t i = 0; i < 3; ++i)
@@ -309,7 +310,7 @@ Inverse_Kinematics::Rotation_Matrix Inverse_Kinematics::RotationMatrix_Multiply(
  * @param R 输入旋转矩阵
  * @return 转置后的旋转矩阵
  */
-Inverse_Kinematics::Rotation_Matrix Inverse_Kinematics::RotationMatrix_Transpose(const Rotation_Matrix& R)
+Rotation_Matrix Inverse_Kinematics::RotationMatrix_Transpose(const Rotation_Matrix& R)
 {
     Rotation_Matrix R1;
     for (uint8_t i=0;i<3;i++)
@@ -328,7 +329,7 @@ Inverse_Kinematics::Rotation_Matrix Inverse_Kinematics::RotationMatrix_Transpose
  * @param theta 关节角度
  * @return 对应连杆的旋转矩阵
  */
-Inverse_Kinematics::Rotation_Matrix Inverse_Kinematics::Compute_Link_R(uint8_t m, float theta)
+Rotation_Matrix Inverse_Kinematics::Compute_Link_R(uint8_t m, float theta)
 {
     Rotation_Matrix R;
     float ct = cosf(theta);
@@ -348,7 +349,7 @@ Inverse_Kinematics::Rotation_Matrix Inverse_Kinematics::Compute_Link_R(uint8_t m
  * @param Coor_Pos 包含ZYZ欧拉角 (alpha, beta, gamma) 的位姿
  * @return 对应的3x3旋转矩阵
  */
-Inverse_Kinematics::Rotation_Matrix Inverse_Kinematics::ZYZ_to_RotationMatrix(const Coordinates_Pose& Coor_Pos)
+Rotation_Matrix Inverse_Kinematics::ZYZ_to_RotationMatrix(const Coordinates_Pose& Coor_Pos)
 {
     float phi = Coor_Pos.alpha;   // Z
     float theta = Coor_Pos.beta; // Y

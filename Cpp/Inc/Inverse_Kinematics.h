@@ -11,17 +11,16 @@
 class Inverse_Kinematics
 {
 public:
+
     Inverse_Kinematics();
 
     void Clear(void);
 
     bool Solve_FinalTheta(const Coordinates_Pose& target_pose,const float current_angles[6],float best_angles[6]);
 
+    Rotation_Matrix ZYZ_to_RotationMatrix(const Coordinates_Pose& Coor_Pos);
+
 private:
-    typedef struct
-    {
-        float m[3][3];
-    }Rotation_Matrix;
 
     void Wrist_Position_Optimized(const Coordinates_Pose& Coor_Pos);
 
@@ -38,8 +37,6 @@ private:
     Rotation_Matrix RotationMatrix_Transpose(const Rotation_Matrix& R);
 
     Rotation_Matrix Compute_Link_R(uint8_t m, float theta);
-
-    Rotation_Matrix ZYZ_to_RotationMatrix(const Coordinates_Pose& Coor_Pos);
 
     void Solve_Theta456(const Coordinates_Pose& Coor_Pos,const float CurrentTheta4);
 
