@@ -47,7 +47,7 @@ private:
     static constexpr float CONTROL_DT=0.01f;
     static constexpr float RAD_TO_RPM=9.549297f;
 
-    static constexpr float PID_Kp[6]={0.65,0.5,0.75,1,2,10};
+    static constexpr float PID_Kp[6]={0.65,0.5,0.75,1,1,10};
     uint8_t is_first_run;
     float Target_Angle_Rad[6];
     float Last_Target_Angle_Rad[6];

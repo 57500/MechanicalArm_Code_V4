@@ -9,6 +9,7 @@
 #include "can.h"
 #include "Inverse_Kinematics.h"
 #include "MotorControl.h"
+#include "usart.h"
 
 /**
  * @brief 轨迹规划的构造函数
@@ -211,9 +212,10 @@ void Trajectory_Planning::Update_Target_Angle_Rad(const float* Best_Angle_Rad)
  */
 void Trajectory_Planning::Calculate_Current_JointRPM(void)
 {
-    if (Count <= 1)
+    if (Count <= 2)
     {
-        for (int i = 0; i < 6; i++) JointRPM[i] = 0.0f;
+        for (int i = 0; i < 6; i++) JointRPM[i] = 0.000f;
+
         return;
     }
 

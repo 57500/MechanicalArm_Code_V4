@@ -78,7 +78,7 @@ void PadControl::Calculate_Target_CP(const Pad_Params_t Current_PD, const Coordi
     float target_w_gamma = ((float)Current_PD.btn_rb - (float)Current_PD.btn_lb) * Sensitivity;
 
     float target_w_alpha = raw_rx * Sensitivity * Euler_Limit;
-    float target_w_beta  = raw_ry * Sensitivity * Euler_Limit;
+    float target_w_beta  = raw_ry * Sensitivity * Euler_Limit * 0.7;
 
     //一阶低通滤波
     // SMOOTH_FACTOR 决定柔顺程度

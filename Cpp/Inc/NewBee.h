@@ -41,6 +41,8 @@ public:
     void Check_Pad_Lock(void);
     void Check_Pad_Home(void);
 
+    RobotState state;
+
 private:
     ForwardKinematics fk;
     Inverse_Kinematics ik;
@@ -54,7 +56,7 @@ private:
     MotorControl motor5;
     MotorControl motor6;
 
-    RobotState state;
+
 
     PadControl pd;
 };

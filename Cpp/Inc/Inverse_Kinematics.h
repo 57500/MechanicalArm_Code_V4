@@ -38,7 +38,7 @@ private:
 
     Rotation_Matrix Compute_Link_R(uint8_t m, float theta);
 
-    void Solve_Theta456(const Coordinates_Pose& Coor_Pos,const float CurrentTheta4);
+    void Solve_Theta456(const Coordinates_Pose& Coor_Pos, const float current_angles[6]);
 
     bool SelectBestSolution(const float current_angles[6],float best_angles[6]);
 

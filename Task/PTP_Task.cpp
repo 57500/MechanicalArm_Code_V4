@@ -48,6 +48,10 @@ static uint8_t TimFlag=0;
                 {
                     nb.UpDate_PTP_Control();
                 }
+                else if (nb.Get_Current_Step()==0)
+                {
+                    nb.Emergency_Stop();
+                }
             }
         }
     }

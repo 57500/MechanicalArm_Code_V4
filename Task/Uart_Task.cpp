@@ -78,6 +78,7 @@ void Uart_Task(void *pvParameters)
 
                 nb.UpDate_Current_Angle_Rad();
                 nb.UpDate_Current_CP();
+
                 nb.UpDate_Target_CP(target);
                 nb.UpDate_S_Curve_Profile();
             }
