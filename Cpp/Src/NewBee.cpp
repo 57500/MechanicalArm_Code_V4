@@ -46,9 +46,6 @@ void NewBee::UpDate_PTP_Control()
     tp.Control_Once(state.Current_Angle_Rad,state.Next_Best_Angle_Rad);
 
     Control_All_Motor(tp.JointRPM);
-
-    float x[5]={state.Next_Best_Angle_Rad[4],state.Current_Angle_Rad[4],tp.JointRPM[4],(float)tp.Step,tp.CP_Ref[tp.Count].beta};
-    Send_FireWater_Text(x,5);
 }
 
 /**
@@ -78,11 +75,6 @@ void NewBee::UpDate_Pad_Control()
             pd.Control_Once(state.Current_Angle_Rad,state.Next_Best_Angle_Rad);
 
             Control_All_Motor(pd.JointRPM);
-
-
-
-            // float x[4]={state.Next_Best_Angle_Rad[5],state.Current_Angle_Rad[5],pd.JointRPM[5]};
-            // Send_FireWater_Text(x,4);
         }
         else if (state.Current_Pad_Mode==Joint)
         {
