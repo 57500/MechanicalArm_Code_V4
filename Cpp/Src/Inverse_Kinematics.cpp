@@ -387,157 +387,6 @@ float Get_Angle_Diff(float target, float current) {
     return diff;
 }
 
-// void Inverse_Kinematics::Solve_Theta456(const Coordinates_Pose& Coor_Pos, const float current_angles[6])
-// {
-//     const float SINGULAR_TOL = 0.0001f;
-//     Rotation_Matrix R06 = ZYZ_to_RotationMatrix(Coor_Pos);
-//
-//     for (int i = 0; i < 4; ++i)
-//     {
-//         if (State[i] == 0) continue;
-//
-//         // 计算 R36 (确保你的 Compute_Link_R 是按照 MDH 逻辑实现的)
-//         Rotation_Matrix R01 = Compute_Link_R(1, Theta1[i]);
-//         Rotation_Matrix R12 = Compute_Link_R(2, Theta2[i]);
-//         Rotation_Matrix R23 = Compute_Link_R(3, Theta3[i]);
-//         Rotation_Matrix R03 = RotationMatrix_Multiply(RotationMatrix_Multiply(R01, R12), R23);
-//         Rotation_Matrix R36 = RotationMatrix_Multiply(RotationMatrix_Transpose(R03), R06);
-//
-//         // --- 针对改进型 DH (MDH) 的专用提取公式 ---
-//
-//         // 1. 提取 cos(theta5)
-//         float cos_th5 = R36.m[1][2]; // MDH 下 cos(t5) 位于 m[1][2]
-//         if (cos_th5 > 1.0f) cos_th5 = 1.0f;
-//         if (cos_th5 < -1.0f) cos_th5 = -1.0f;
-//
-//         float sin_th5 = sqrtf(1.0f - cos_th5 * cos_th5);
-//
-//         float t4_a, t5_a, t6_a;
-//         float t4_b, t5_b, t6_b;
-//
-//         if (sin_th5 < SINGULAR_TOL) // 奇异点处理
-//         {
-//             t5_a = (cos_th5 > 0) ? 0.0f : PI;
-//             t4_a = current_angles[3]; // 保持关节4
-//             // 奇异点下简化求解 t6
-//             t6_a = atan2f(R36.m[0][1], R36.m[0][0]);
-//             t4_b = t4_a; t5_b = t5_a; t6_b = t6_a;
-//         }
-//         else
-//         {
-//             // 解 A (sin_th5 为正)
-//             t5_a = acosf(cos_th5);
-//             t4_a = atan2f(R36.m[2][2], -R36.m[0][2]);
-//             t6_a = atan2f(-R36.m[1][1], R36.m[1][0]);
-//
-//             // 解 B (sin_th5 为负)
-//             t5_b = -t5_a;
-//             t4_b = atan2f(-R36.m[2][2], R36.m[0][2]);
-//             t6_b = atan2f(R36.m[1][1], -R36.m[1][0]);
-//         }
-//
-//         // --- 分支优选 (与之前逻辑一致) ---
-//         float cost_a = powf(Get_Angle_Diff(t4_a, current_angles[3]), 2) +
-//                        powf(Get_Angle_Diff(t5_a, current_angles[4]), 2) +
-//                        powf(Get_Angle_Diff(t6_a, current_angles[5]), 2);
-//
-//         float cost_b = powf(Get_Angle_Diff(t4_b, current_angles[3]), 2) +
-//                        powf(Get_Angle_Diff(t5_b, current_angles[4]), 2) +
-//                        powf(Get_Angle_Diff(t6_b, current_angles[5]), 2);
-//
-//         if (cost_a <= cost_b) {
-//             Theta4[i] = t4_a; Theta5[i] = t5_a; Theta6[i] = t6_a;
-//         } else {
-//             Theta4[i] = t4_b; Theta5[i] = t5_b; Theta6[i] = t6_b;
-//         }
-//     }
-// }
-
-
-// void Inverse_Kinematics::Solve_Theta456(const Coordinates_Pose& Coor_Pos, const float current_angles[6])
-// {
-//     const float SINGULAR_TOL = 0.005f; // 约 0.3 度的奇异点阈值
-//     Rotation_Matrix R06 = ZYZ_to_RotationMatrix(Coor_Pos);
-//
-//     for (int i = 0; i < 4; ++i)
-//     {
-//         if (State[i] == 0) continue;
-//
-//         // 计算 R36
-//         Rotation_Matrix R01 = Compute_Link_R(1, Theta1[i]);
-//         Rotation_Matrix R12 = Compute_Link_R(2, Theta2[i]);
-//         Rotation_Matrix R23 = Compute_Link_R(3, Theta3[i]);
-//         Rotation_Matrix R03 = RotationMatrix_Multiply(RotationMatrix_Multiply(R01, R12), R23);
-//         Rotation_Matrix R36 = RotationMatrix_Multiply(RotationMatrix_Transpose(R03), R06);
-//
-//         float r13 = R36.m[0][2];
-//         float r23 = R36.m[1][2]; // cos(t5)
-//         float r33 = R36.m[2][2];
-//         float r21 = R36.m[1][0];
-//         float r22 = R36.m[1][1];
-//
-//         float cos_t5 = r23;
-//         if (cos_t5 > 1.0f) cos_t5 = 1.0f;
-//         else if (cos_t5 < -1.0f) cos_t5 = -1.0f;
-//
-//         // 两个分支：t5 为正，t5 为负
-//         float t5_sol[2];
-//         t5_sol[0] = acosf(cos_t5);
-//         t5_sol[1] = -t5_sol[0];
-//
-//         float t4_sol[2], t6_sol[2];
-//
-//         for (int b = 0; b < 2; b++) {
-//             float st5 = sinf(t5_sol[b]);
-//             if (fabsf(st5) < SINGULAR_TOL) {
-//                 // 奇异处理：t4 保持当前值，t6 承担所有旋转
-//                 t4_sol[b] = current_angles[3];
-//                 if (cos_t5 > 0) // t5 接近 0
-//                     t6_sol[b] = atan2f(R36.m[0][1], R36.m[0][0]) - t4_sol[b];
-//                 else // t5 接近 PI
-//                     t6_sol[b] = atan2f(-R36.m[0][1], -R36.m[0][0]) + t4_sol[b];
-//             } else {
-//                 // 正常求解
-//                 if (b == 0) { // 正分支
-//                     t4_sol[b] = atan2f(r13, -r33);
-//                     t6_sol[b] = atan2f(r21, -r22);
-//                 } else { // 负分支
-//                     t4_sol[b] = atan2f(-r13, r33);
-//                     t6_sol[b] = atan2f(-r21, r22);
-//                 }
-//             }
-//         }
-//
-//         // --- 核心优化：分支选择逻辑 ---
-//         // 计算两个解相对于当前角度的“代价”
-//         float cost0 = powf(Get_Angle_Diff(t4_sol[0], current_angles[3]), 2) +
-//                       powf(Get_Angle_Diff(t5_sol[0], current_angles[4]), 2) +
-//                       powf(Get_Angle_Diff(t6_sol[0], current_angles[5]), 2);
-//
-//         float cost1 = powf(Get_Angle_Diff(t4_sol[1], current_angles[1]), 2) +
-//                       powf(Get_Angle_Diff(t5_sol[1], current_angles[4]), 2) +
-//                       powf(Get_Angle_Diff(t6_sol[1], current_angles[5]), 2);
-//
-//         int best = (cost0 <= cost1) ? 0 : 1;
-//
-//         // 最终赋值，并确保角度在 [-PI, PI]
-//         Theta4[i] = current_angles[3] + Get_Angle_Diff(t4_sol[best], current_angles[3]);
-//         Theta5[i] = current_angles[4] + Get_Angle_Diff(t5_sol[best], current_angles[4]);
-//         Theta6[i] = current_angles[5] + Get_Angle_Diff(t6_sol[best], current_angles[5]);
-//
-//         // 如果需要限制在 [-PI, PI]
-//         auto wrap = [](float a) {
-//             while (a > PI) a -= 2*PI;
-//             while (a < -PI) a += 2*PI;
-//             return a;
-//         };
-//         Theta4[i] = wrap(Theta4[i]);
-//         Theta5[i] = wrap(Theta5[i]);
-//         Theta6[i] = wrap(Theta6[i]);
-//     }
-// }
-
-
 void Inverse_Kinematics::Solve_Theta456(const Coordinates_Pose& Coor_Pos, const float current_angles[6])
 {
     const float SINGULAR_TOL = 0.08f; // 奇异点容差，约等于 4.5 度
@@ -585,7 +434,6 @@ void Inverse_Kinematics::Solve_Theta456(const Coordinates_Pose& Coor_Pos, const 
         float t5_raw = atan2f(sin_th5, cos_th5);
         float t6_raw = atan2f(-r22, r21);
 
-        // ---------------- 核心修复区：最优分支追踪 ----------------
         // 构造腕部的两组等效数学解
         // 解A：原始解
         float t4_a = t4_raw;
@@ -611,7 +459,7 @@ void Inverse_Kinematics::Solve_Theta456(const Coordinates_Pose& Coor_Pos, const 
 
         float t4_calc, t5_calc, t6_calc;
 
-        // 优选距离当前物理姿态最近的一组解，彻底消除单向卡死和突变翻转
+        // 优选距离当前物理姿态最近的一组解，彻底消除单向卡死和突变翻转!!!
         if (cost_a <= cost_b)
         {
             t4_calc = t4_a;
@@ -628,10 +476,8 @@ void Inverse_Kinematics::Solve_Theta456(const Coordinates_Pose& Coor_Pos, const 
         t4_calc = norm(t4_calc);
         t5_calc = norm(t5_calc);
         t6_calc = norm(t6_calc);
-        // --------------------------------------------------------
 
         // 奇异点锁定：当进入奇异点时直接冻结关节四，在关节六进行补偿
-        // (注：这段逻辑原作者写得非常好，予以保留，但必须放在分支优选之后执行)
         if (sin_th5 < SINGULAR_TOL)
         {
             // 使用三次方阻尼曲线，让靠近 0 度时的权重极度接近 0

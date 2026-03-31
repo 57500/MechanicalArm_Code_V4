@@ -134,6 +134,11 @@ void NewBee::UpDate_Pad_Control()
     state.Last_Pad=state.Current_Pad;
 }
 
+/**
+ * @brief 控制所有电机
+ * @param rpm：关节转速
+ * @return NULL
+ */
 void NewBee::Control_All_Motor(const float* rpm)
 {
     motor1.Motor_VelControl(rpm[0],0,0);
@@ -144,6 +149,11 @@ void NewBee::Control_All_Motor(const float* rpm)
     motor6.Motor_VelControl(rpm[5],0,0);
 }
 
+/**
+ * @brief 急停
+ * @param NULL
+ * @return NULL
+ */
 void NewBee::Emergency_Stop(void)
 {
     Clear();
@@ -156,6 +166,11 @@ void NewBee::Emergency_Stop(void)
     motor6.Motor_VelControl(0,0,0);
 }
 
+/**
+ * @brief 更新当前关节角度
+ * @param NULL
+ * @return NULL
+ */
 void NewBee::UpDate_Current_Angle_Rad(void)
 {
     //并行通讯
@@ -189,36 +204,72 @@ void NewBee::UpDate_Current_Angle_Rad(void)
     }
 }
 
+/**
+ * @brief 获取内部关节角度
+ * @param NULL
+ * @return NULL
+ */
 float* NewBee::Get_Current_Angle_Rad(void)
 {
     return state.Current_Angle_Rad;
 }
 
+/**
+ * @brief 更新S型曲线
+ * @param NULL
+ * @return NULL
+ * @note 要确保调用前已经更新了目标位姿和当前位姿
+ */
 void NewBee::UpDate_S_Curve_Profile(void)
 {
     tp.S_Curve_Profile(state.Target_CP, state.Current_CP);
 }
 
+/**
+ * @brief 获取内部轨迹规划步数
+ * @param NULL
+ * @return 步数
+ */
 uint32_t NewBee::Get_Current_Step(void)
 {
     return tp.Step;
 }
 
+/**
+ * @brief 更新目标位姿到内部
+ * @param 目标位姿
+ * @return NULL
+ */
 void NewBee::UpDate_Target_CP(const Coordinates_Pose& target_cp)
 {
     state.Target_CP=target_cp;
 }
 
+/**
+ * @brief 根据内部当前角度计算当前位姿
+ * @param NULL
+ * @return NULL
+ */
 void NewBee::UpDate_Current_CP()
 {
     state.Current_CP=fk.Forward_Kinematics(state.Current_Angle_Rad);
 }
 
+/**
+ * @brief 更新当前手柄参数到内部
+ * @param pd：当前手柄参数
+ * @return NULL
+ */
 void NewBee::UpDate_Current_Pad(const Pad_Params_t pd)
 {
     state.Current_Pad=pd;
 }
 
+/**
+ * @brief 检查是否需要更换手柄模式
+ * @param NULL
+ * @return NULL
+ */
 void NewBee::Check_Pad_Mode(void)
 {
     if (state.Current_Pad.btn_y==1&&state.Last_Pad.btn_y==0)
@@ -251,6 +302,11 @@ void NewBee::Check_Pad_Mode(void)
     }
 }
 
+/**
+ * @brief 检查是否需要修改手柄灵敏度
+ * @param NULL
+ * @return NULL
+ */
 void NewBee::Check_Pad_Sensitivity(void)
 {
     if (state.Current_Pad.btn_x==1&&state.Last_Pad.btn_x==0)
@@ -270,6 +326,11 @@ void NewBee::Check_Pad_Sensitivity(void)
     }
 }
 
+/**
+ * @brief 检查是否需要修改手柄锁定信息
+ * @param NULL
+ * @return NULL
+ */
 void NewBee::Check_Pad_Lock()
 {
     if (state.Current_Pad.btn_b==1&&state.Last_Pad.btn_b==0)
@@ -314,6 +375,11 @@ void NewBee::Check_Pad_Lock()
     }
 }
 
+/**
+ * @brief 检查是否回家
+ * @param NULL
+ * @return NULL
+ */
 void NewBee::Check_Pad_Home(void)
 {
     if (state.Current_Pad.btn_a==1&&state.Last_Pad.btn_a==0)
