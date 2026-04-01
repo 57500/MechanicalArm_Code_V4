@@ -24,7 +24,6 @@ static uint8_t TimFlag=0;
     Wait:
     ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
-
     while (1)
     {
         //等待定时器一队列
@@ -56,7 +55,6 @@ static uint8_t TimFlag=0;
                     nb.UpDate_Current_Pad(pd);
                     nb.UpDate_Pad_Control();
                 }
-
             }
         }
     }
