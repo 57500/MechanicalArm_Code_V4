@@ -253,7 +253,7 @@ void PadControl::Calculate_Target_ToolCP(const Pad_Params_t Current_PD, const Co
 
 }
 
-////简单限幅
+////简单限幅--不柔顺
 // void PadControl::Calculate_Deta_CP(const Pad_Params_t Current_PD, const Coordinates_Pose Current_CP)
 // {
 //

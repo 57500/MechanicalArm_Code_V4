@@ -46,7 +46,6 @@ private:
 
 
     static constexpr float CONTROL_DT=0.01f;
-    // static constexpr uint8_t Limit=50;
     static constexpr float Z_limit=0.6;
     static constexpr float Euler_Limit=0.01f;
     static constexpr float Joint_Limit=0.1f;
