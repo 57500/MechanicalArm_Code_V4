@@ -120,5 +120,5 @@ TCPPORT = 8888 # VOFA+ 连接的本地网络端口
 - [ ] **3.2 结构优化**：探索低成本的机械结构优化方案，提升机械臂刚性与精度。
   <img width="691" height="637" alt="机械结构优化" src="https://github.com/user-attachments/assets/47f8dd17-c257-4bca-a217-08e831ade15a" />
 
-- [ ] **3.3 算法进阶**：系统学习并深入机器人控制算法（运动学、动力学规划等）。
+- [ ] **3.3 算法进阶**：系统学习并深入机器人控制算法（动力学规划等）。
   <img width="1906" height="1007" alt="机器人控制算法" src="https://github.com/user-attachments/assets/da750c29-7581-42cc-bc5f-f212747b85ea" />
